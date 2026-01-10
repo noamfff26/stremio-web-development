@@ -7,7 +7,8 @@ const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { usePlatform, useBinaryState, withCoreSuspender } = require('stremio/common');
 const { DEFAULT_ADDONS } = require('stremio/common/addonsConfig');
-const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu } = require('stremio/components');
+const { removeAddons, installDefaultAddons } = require('stremio/common/addonInstaller');
+const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu, Checkbox } = require('stremio/components');
 const { useServices } = require('stremio/services');
 const Addon = require('./Addon');
 const useInstalledAddons = require('./useInstalledAddons');
@@ -27,6 +28,8 @@ const Addons = ({ urlParams, queryParams }) => {
     const selectInputs = useSelectableInputs(installedAddons, remoteAddons);
     const [filtersModalOpen, openFiltersModal, closeFiltersModal] = useBinaryState(false);
     const [addAddonModalOpen, openAddAddonModal, closeAddAddonModal] = useBinaryState(false);
+    const [installAllModalOpen, openInstallAllModal, closeInstallAllModal] = useBinaryState(false);
+    const [cleanInstallSelected, setCleanInstallSelected] = React.useState(true);
     const addAddonUrlInputRef = React.useRef(null);
     const addAddonOnSubmit = React.useCallback(() => {
         if (addAddonUrlInputRef.current !== null) {
@@ -50,6 +53,23 @@ const Addons = ({ urlParams, queryParams }) => {
             }
         ];
     }, [addAddonOnSubmit]);
+    const installAllModalButtons = React.useMemo(() => {
+        return [
+            {
+                className: styles['cancel-button'],
+                label: t('BUTTON_CANCEL'),
+                props: {
+                    onClick: closeInstallAllModal
+                }
+            },
+            {
+                label: t('BUTTON_INSTALL'),
+                props: {
+                    onClick: confirmInstallAllAddons
+                }
+            }
+        ];
+    }, [confirmInstallAllAddons]);
     const [search, setSearch] = React.useState('');
     const searchInputOnChange = React.useCallback((event) => {
         setSearch(event.currentTarget.value);
@@ -85,19 +105,30 @@ const Addons = ({ urlParams, queryParams }) => {
     const onAddonOpen = React.useCallback((event) => {
         setAddonDetailsTransportUrl(event.dataset.addon.transportUrl);
     }, [setAddonDetailsTransportUrl]);
+
+    const toggleCleanInstall = React.useCallback(() => {
+        setCleanInstallSelected(prev => !prev);
+    }, []);
+
+    const confirmInstallAllAddons = React.useCallback(async () => {
+        closeInstallAllModal();
+        try {
+            if (cleanInstallSelected) {
+                console.log('Starting addon removal...');
+                await removeAddons(core);
+                console.log('Addon removal complete');
+            }
+            console.log('Starting default addon installation...');
+            await installDefaultAddons(core);
+            console.log('Default addon installation complete');
+        } catch (error) {
+            console.error('Error during addon setup:', error);
+        }
+    }, [core, cleanInstallSelected]);
+
     const onInstallAllDefaultAddons = React.useCallback(() => {
-        DEFAULT_ADDONS.forEach((addonUrl) => {
-            core.transport.dispatch({
-                action: 'Ctx',
-                args: {
-                    action: 'InstallAddon',
-                    args: {
-                        transportUrl: addonUrl,
-                    }
-                }
-            });
-        });
-    }, [core.transport]);
+        openInstallAllModal();
+    }, []);
     const closeAddonDetails = React.useCallback(() => {
         setAddonDetailsTransportUrl(null);
     }, [setAddonDetailsTransportUrl]);
@@ -261,6 +292,25 @@ const Addons = ({ urlParams, queryParams }) => {
                             placeholder={t('PASTE_ADDON_URL')}
                             autoFocus={true}
                             onSubmit={addAddonOnSubmit}
+                        />
+                    </ModalDialog>
+                    :
+                    null
+            }
+            {
+                installAllModalOpen ?
+                    <ModalDialog
+                        className={styles['install-all-modal-container']}
+                        title={'התקן את כל התוספים'}
+                        buttons={installAllModalButtons}
+                        onCloseRequest={closeInstallAllModal}>
+                        <div className={styles['notice']}>
+                            {'פעולה זו תתקין את כל התוספים המוגדרים מראש. האם תרצה גם להסיר את התוספים הקיימים לפני ההתקנה?'}
+                        </div>
+                        <Checkbox
+                            label={'הסר תוספים קיימים (התקנה נקייה)'}
+                            checked={cleanInstallSelected}
+                            onChange={toggleCleanInstall}
                         />
                     </ModalDialog>
                     :
