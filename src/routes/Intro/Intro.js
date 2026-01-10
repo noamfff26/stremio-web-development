@@ -25,7 +25,8 @@ const ADDONS_TO_REMOVE = [
     'https://watchhub.strem.io/manifest.json',
     'https://caching.stremio.net/publicdomainmovies.now.sh/manifest.json',
     'https://opensubtitles-v3.strem.io/manifest.json',
-    'https://opensubtitles.strem.io/stremio/v1'
+    'https://opensubtitles.strem.io/stremio/v1',
+    'https://opensubtitles.strem.io/manifest.json'
 ];
 
 // Custom addons to install on signup
