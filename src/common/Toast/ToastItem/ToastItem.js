@@ -72,13 +72,13 @@ const ToastItem = ({ title, message, action, dataset, onSelect, onClose, ...prop
             <div className={styles['info-container']}>
                 {
                     typeof title === 'string' && title.length > 0 ?
-                        <div className={styles['title-container']}>{title}</div>
+                        <div className={styles['title-container']}>{t(title, { defaultValue: title })}</div>
                         :
                         null
                 }
                 {
                     typeof message === 'string' && message.length > 0 ?
-                        <div className={styles['message-container']}>{message}</div>
+                        <div className={styles['message-container']}>{t(message, { defaultValue: message })}</div>
                         :
                         null
                 }
