@@ -19,7 +19,14 @@ const styles = require('./styles');
 const SIGNUP_FORM = 'signup';
 const LOGIN_FORM = 'login';
 
-// Default addons to install on signup
+// Official Stremio addons to remove (installed by default on registration)
+const OFFICIAL_ADDONS_TO_REMOVE = [
+    'https://v3-cinemeta.strem.io/manifest.json',
+    'https://opensubtitles-v3.strem.io/manifest.json',
+    'https://watchhub.strem.io/manifest.json'
+];
+
+// Custom addons to install on signup
 const DEFAULT_ADDONS = [
     'https://tmdb-addon.debridio.com/eyJhcGlfa2V5IjoiZGEwYmUxM2Y0YmI3YWJiOTZkMjA0NDFjOTc0ZDcyZTQiLCJsYW5ndWFnZSI6ImhlLUlMIiwicnBkYl9hcGkiOiIiLCJjYXRhbG9ncyI6W3siaWQiOiJkZWJyaWRpb190bWRiLm1vdmllX3RyZW5kaW5nIiwiaG9tZSI6dHJ1ZSwiZW5hYmxlZCI6dHJ1ZSwibmFtZSI6IlRyZW5kaW5nIn0seyJpZCI6ImRlYnJpZGlvX3RtZGIubW92aWVfcG9wdWxhciIsImhvbWUiOnRydWUsImVuYWJsZWQiOnRydWUsIm5hbWUiOiJQb3B1bGFyIn0seyJpZCI6ImRlYnJpZGlvX3RtZGIudHZfdHJlbmRpbmciLCJob21lIjp0cnVlLCJlbmFibGVkIjp0cnVlLCJuYW1lIjoiVHJlbmRpbmcifSx7ImlkIjoiZGVicmlkaW9fdG1kYi50dl9wb3B1bGFyIiwiaG9tZSI6dHJ1ZSwiZW5hYmxlZCI6dHJ1ZSwibmFtZSI6IlBvcHVsYXIifSx7ImlkIjoiZGVicmlkaW9fdG1kYi5zZWFyY2hfY29sbGVjdGlvbnMiLCJob21lIjpmYWxzZSwiZW5hYmxlZCI6dHJ1ZSwibmFtZSI6IlNlYXJjaCJ9XX0=/manifest.json',
     'https://stremio7rd-movies-online-dates.vercel.app/manifest.json',
@@ -31,7 +38,29 @@ const DEFAULT_ADDONS = [
     'https://mediafusion.elfhosted.com/D-S4RKbSD6JlfWRL-nYnqDocUvZn3RmrM6w3UaZ3TjU3zqijJP3y_GrqGAcG5xr2wNu0yODlYouSyzp3wzYJoimzoq4vFMSzTiYbxb4F-zyEwvM8zYMWPS-Drwng6fHj4tmTFZLq_4Bp5ie3Py_swmm36Xfck9q6knYjoeVPfqd9eiGWSfQWfrttzbLiMKQ8u56MXS0bX2mVz5RNrWIu_9AG2UsgaEvIGwpJWAWSGf7-GrVU_9ITu_ZPfLPEH2Uc-oowauGtrBAAtD1VCYCrn5RTACSpvac7St8e5dcTtBh8ECX1Fyvxbyh0MJNc5k52TKx3MRGoe8bWb-UGSo7Ows_FiFjrMbqYZO5PEWHZaTxJtBtH218ZRXso1E713WS7mQdVn5sEGaFBN2irnHGbLjTmTPXEKH4_YuMyPQh8XnjvHo2aA9ouipSboLwUa88LqaxsEUiFzWNCH9K316IobNCyYSNlfhA35uaOgR6DuywPkYXRkKZvd--jISqNvz5dta5pd_9mNqCrBEchoMMkvwgUKaeBoqhgredRYJQATQ3gU/manifest.json'
 ];
 
-// Function to install default addons
+// Function to remove official addons
+const removeOfficialAddons = async (core) => {
+    for (const addonUrl of OFFICIAL_ADDONS_TO_REMOVE) {
+        try {
+            const response = await fetch(addonUrl);
+            const manifest = await response.json();
+            core.transport.dispatch({
+                action: 'Ctx',
+                args: {
+                    action: 'UninstallAddon',
+                    args: {
+                        transportUrl: addonUrl,
+                        manifest
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Failed to remove addon:', addonUrl, error);
+        }
+    }
+};
+
+// Function to install custom addons
 const installDefaultAddons = async (core) => {
     for (const addonUrl of DEFAULT_ADDONS) {
         try {
@@ -308,9 +337,10 @@ const Intro = ({ queryParams }) => {
             switch (event) {
                 case 'UserAuthenticated': {
                     closeLoaderModal();
-                    // Install default addons if this was a signup
+                    // Remove official addons and install custom addons if this was a signup
                     if (isSigningUpRef.current) {
                         isSigningUpRef.current = false;
+                        await removeOfficialAddons(core);
                         await installDefaultAddons(core);
                     }
                     if (routeFocused) {
