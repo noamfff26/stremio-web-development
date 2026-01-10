@@ -19,8 +19,12 @@ const styles = require('./styles');
 const SIGNUP_FORM = 'signup';
 const LOGIN_FORM = 'login';
 
-// Addons to remove on signup (only non-protected ones)
+// Addons to remove on signup
 const ADDONS_TO_REMOVE = [
+    'https://v3-channels.strem.io/manifest.json',
+    'https://watchhub.strem.io/manifest.json',
+    'https://caching.stremio.net/publicdomainmovies.now.sh/manifest.json',
+    'https://opensubtitles-v3.strem.io/manifest.json',
     'https://opensubtitles.strem.io/stremio/v1'
 ];
 
