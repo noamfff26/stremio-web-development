@@ -184,8 +184,8 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                         description={'If disabled, official addons like OpenSubtitles v3 will be removed'}
                     >
                         <Toggle
-                            toggled={keepAddons}
-                            onToggle={() => setKeepAddons(!keepAddons)}
+                            checked={keepAddons}
+                            onClick={() => setKeepAddons(!keepAddons)}
                         />
                     </Option>
 
