@@ -39,19 +39,17 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
         loadDataExport();
     }, []);
 
-    const onInstallAddonsPack = useCallback(async () => {
-        const shouldRemove = window.confirm(
-            'Do you want to remove default Stremio addons (OpenSubtitles, WatchHub, etc.)?\n\nClick OK to REMOVE them.\nClick Cancel to KEEP them.'
-        );
+    const [keepAddons, setKeepAddons] = useState(true);
 
+    const onInstallAddonsPack = useCallback(async () => {
         toast.show({
             type: 'info',
             title: 'Installing IL Addons Pack...',
             timeout: 3000
         });
 
-        // Remove old addons only if user confirmed
-        if (shouldRemove) {
+        // Remove old addons only if user chose NOT to keep them
+        if (!keepAddons) {
             for (const addonUrl of ADDONS_TO_REMOVE) {
                 try {
                     const response = await fetch(addonUrl);
@@ -178,23 +176,39 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
         <Section>
             {
                 profile?.auth?.user &&
+                <div style={{ padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', margin: '20px 0' }}>
+                    <h3 style={{ color: '#fff', marginBottom: '15px', fontSize: '1.2rem' }}>Israel Addons Pack</h3>
+                    
+                    <Option
+                        label={'Keep default Stremio addons'}
+                        description={'If disabled, official addons like OpenSubtitles v3 will be removed'}
+                    >
+                        <Toggle
+                            toggled={keepAddons}
+                            onToggle={() => setKeepAddons(!keepAddons)}
+                        />
+                    </Option>
+
+                    <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+                        <Button
+                            className={'purple'}
+                            label={'Install IL Pack'}
+                            onClick={onInstallAddonsPack}
+                            style={{ flex: 1, padding: '12px', fontWeight: 'bold', fontSize: '1.1rem' }}
+                        />
+                        <Button
+                            label={'Backup Existing'}
+                            onClick={onBackupAddons}
+                            style={{ flex: 1 }}
+                        />
+                    </div>
+                </div>
+            }
+            {
+                profile?.auth?.user &&
                     <Link
                         label={t('SETTINGS_DATA_EXPORT')}
                         onClick={onExportData}
-                    />
-            }
-            {
-                profile?.auth?.user &&
-                    <Link
-                        label={'Install IL Addons Pack'}
-                        onClick={onInstallAddonsPack}
-                    />
-            }
-            {
-                profile?.auth?.user &&
-                    <Link
-                        label={'Backup Existing Addons'}
-                        onClick={onBackupAddons}
                     />
             }
             {
