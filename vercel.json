@@ -1,4 +1,7 @@
 {
+  "buildCommand": "npm install -g pnpm && pnpm install && pnpm run build",
+  "outputDirectory": "build",
+  "framework": null,
   "headers": [
     {
       "source": "/(.*).wasm",
@@ -8,6 +11,12 @@
           "value": "application/wasm"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!.*\\.).*)",
+      "destination": "/index.html"
     }
   ]
 }
