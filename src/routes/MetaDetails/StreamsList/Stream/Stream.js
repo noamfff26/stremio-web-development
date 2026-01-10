@@ -53,7 +53,7 @@ const Stream = ({ className, videoId, videoReleased, addonName, name, descriptio
     }, []);
 
     const href = React.useMemo(() => {
-        return deepLinks ?
+        return deepLinks && (deepLinks.player || deepLinks.externalPlayer) ?
             deepLinks.externalPlayer ?
                 deepLinks.externalPlayer.web ?
                     deepLinks.externalPlayer.web
@@ -69,7 +69,7 @@ const Stream = ({ className, videoId, videoReleased, addonName, name, descriptio
                 deepLinks.player
             :
             null;
-    }, [deepLinks]);
+    }, [deepLinks, platform.name]);
 
     const download = React.useMemo(() => {
         return href === deepLinks?.externalPlayer?.playlist ?
