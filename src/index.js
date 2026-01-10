@@ -39,6 +39,14 @@ root.render(<App />);
 if (process.env.NODE_ENV === 'production' && process.env.SERVICE_WORKER_DISABLED !== 'true' && process.env.SERVICE_WORKER_DISABLED !== true && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js')
+            .then((registration) => {
+                // Check for updates immediately
+                registration.update();
+                // Check for updates every 60 seconds
+                setInterval(() => {
+                    registration.update();
+                }, 60000);
+            })
             .catch((registrationError) => {
                 console.error('SW registration failed: ', registrationError);
             });
