@@ -188,29 +188,25 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
             </Option>
             <div style={{ marginTop: '24px' }}>
                 <Button
-                    className={'purple'}
+                    className={'button'}
                     onClick={onInstallAddonsPack}
                     disabled={!profile?.auth?.user}
                     style={{
                         width: '100%',
-                        padding: '18px',
                         marginBottom: '12px',
+                        minHeight: '40px',
+                        fontSize: '1rem',
                         fontWeight: 'bold',
-                        fontSize: '1.25rem',
-                        height: 'auto',
-                        minHeight: '48px',
-                        borderRadius: '12px',
-                        letterSpacing: '1px',
                         textAlign: 'center',
-                        direction: 'rtl'
+                        justifyContent: 'center',
                     }}
                 >
-                    התקן חבילת תוספים
+                    התקנת תוספים
                 </Button>
                 <Button
                     onClick={onBackupAddons}
                     disabled={!profile?.auth?.user}
-                    style={{ width: '100%', opacity: 0.7, fontSize: '1rem', borderRadius: '12px', direction: 'rtl' }}
+                    style={{ width: '100%', opacity: 0.7, fontSize: '0.9rem', borderRadius: '4px', textAlign: 'center', justifyContent: 'center' }}
                 >
                     גיבוי תוספים קיימים
                 </Button>
