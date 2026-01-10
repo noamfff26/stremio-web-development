@@ -45,19 +45,13 @@ const installDefaultAddons = async (core) => {
     let successCount = 0;
     let failCount = 0;
 
-    // Temporarily disable error toasts during bulk installation
-    const originalErrorHandler = core.transport._errorHandler;
-    const silentErrorHandler = {
-        handle: () => {},
-        showToast: () => {}
-    };
+    console.log('[AddonInstaller] Starting installation of', DEFAULT_ADDONS.length, 'addons');
 
-    if (core.transport._errorHandler) {
-        core.transport._errorHandler = silentErrorHandler;
-    }
-
-    const installPromises = DEFAULT_ADDONS.map(async (addonUrl) => {
+    // Process addons sequentially to avoid overwhelming the system
+    for (const addonUrl of DEFAULT_ADDONS) {
         try {
+            console.log('[AddonInstaller] Fetching:', addonUrl);
+
             const response = await fetch(addonUrl, {
                 method: 'GET',
                 headers: {
@@ -69,7 +63,7 @@ const installDefaultAddons = async (core) => {
             if (!response.ok) {
                 console.log('[AddonInstaller] Failed to fetch:', addonUrl, response.status);
                 failCount++;
-                return;
+                continue;
             }
 
             const manifest = await response.json();
@@ -77,36 +71,37 @@ const installDefaultAddons = async (core) => {
             if (!manifest || !manifest.id || !manifest.name) {
                 console.log('[AddonInstaller] Invalid manifest:', addonUrl);
                 failCount++;
-                return;
+                continue;
             }
 
-            core.transport.dispatch({
-                action: 'Ctx',
-                args: {
-                    action: 'InstallAddon',
+            console.log('[AddonInstaller] Installing:', manifest.name);
+
+            // Use a Promise to handle the installation
+            await new Promise((resolve) => {
+                core.transport.dispatch({
+                    action: 'Ctx',
                     args: {
-                        transportUrl: addonUrl,
-                        manifest
+                        action: 'InstallAddon',
+                        args: {
+                            transportUrl: addonUrl,
+                            manifest
+                        }
                     }
-                }
+                });
+
+                // Give it a moment to process
+                setTimeout(resolve, 500);
             });
 
-            console.log('[AddonInstaller] Installed:', manifest.name);
+            console.log('[AddonInstaller] Successfully installed:', manifest.name);
             successCount++;
         } catch (error) {
-            console.log('[AddonInstaller] Skipped:', addonUrl, error.message);
+            console.log('[AddonInstaller] Error installing:', addonUrl, error.message);
             failCount++;
         }
-    });
-
-    await Promise.allSettled(installPromises);
-
-    // Restore original error handler
-    if (originalErrorHandler) {
-        core.transport._errorHandler = originalErrorHandler;
     }
 
-    console.log(`[AddonInstaller] Complete: ${successCount} installed, ${failCount} skipped`);
+    console.log(`[AddonInstaller] Complete: ${successCount} installed, ${failCount} failed`);
     return { successCount, failCount };
 };
 

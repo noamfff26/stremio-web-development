@@ -94,18 +94,23 @@ const Addons = ({ urlParams, queryParams }) => {
     }, []);
 
     const confirmInstallAllAddons = React.useCallback(async () => {
+        console.log('[Addons] Install all button clicked');
+        console.log('[Addons] Clean install:', cleanInstallSelected);
         closeInstallAllModal();
+
         try {
             if (cleanInstallSelected) {
-                console.log('Starting addon removal...');
+                console.log('[Addons] Starting addon removal...');
                 await removeAddons(core);
-                console.log('Addon removal complete');
+                console.log('[Addons] Addon removal complete');
             }
-            console.log('Starting default addon installation...');
-            await installDefaultAddons(core);
-            console.log('Default addon installation complete');
+
+            console.log('[Addons] Starting default addon installation...');
+            const result = await installDefaultAddons(core);
+            console.log('[Addons] Installation result:', result);
+            console.log('[Addons] Default addon installation complete');
         } catch (error) {
-            console.error('Error during addon setup:', error);
+            console.error('[Addons] Error during addon setup:', error);
         }
     }, [core, cleanInstallSelected]);
     const installAllModalButtons = React.useMemo(() => {
