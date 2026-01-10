@@ -95,6 +95,7 @@ const Intro = ({ queryParams }) => {
                             termsAccepted: false,
                             privacyPolicyAccepted: false,
                             marketingAccepted: false,
+                            cleanInstall: true,
                             error: ''
                         };
                     }
@@ -128,6 +129,7 @@ const Intro = ({ queryParams }) => {
             termsAccepted: false,
             privacyPolicyAccepted: false,
             marketingAccepted: false,
+            cleanInstall: true,
             error: ''
         }
     );
@@ -297,6 +299,9 @@ const Intro = ({ queryParams }) => {
     const toggleMarketingAccepted = React.useCallback(() => {
         dispatch({ type: 'toggle-checkbox', name: 'marketingAccepted' });
     }, []);
+    const toggleCleanInstall = React.useCallback(() => {
+        dispatch({ type: 'toggle-checkbox', name: 'cleanInstall' });
+    }, []);
     const switchFormOnClick = React.useCallback(() => {
         const queryParams = new URLSearchParams([['form', state.form === SIGNUP_FORM ? LOGIN_FORM : SIGNUP_FORM]]);
         window.location = `#/intro?${queryParams.toString()}`;
@@ -324,7 +329,9 @@ const Intro = ({ queryParams }) => {
                     // Remove specific addons and install custom addons if this was a signup
                     if (isSigningUpRef.current) {
                         isSigningUpRef.current = false;
-                        await removeAddons(core);
+                        if (state.cleanInstall) {
+                            await removeAddons(core);
+                        }
                         await installDefaultAddons(core);
                     }
                     if (routeFocused) {
@@ -346,7 +353,7 @@ const Intro = ({ queryParams }) => {
         return () => {
             core.transport.off('CoreEvent', onCoreEvent);
         };
-    }, [routeFocused]);
+    }, [routeFocused, state.cleanInstall]);
     return (
         <div className={styles['intro-container']}>
             <div className={styles['background-container']} />
@@ -414,6 +421,11 @@ const Intro = ({ queryParams }) => {
                                     label={t('MARKETING_AGREE')}
                                     checked={state.marketingAccepted}
                                     onChange={toggleMarketingAccepted}
+                                />
+                                <Checkbox
+                                    label={t('CLEAN_INSTALL_ADDONS')}
+                                    checked={state.cleanInstall}
+                                    onChange={toggleCleanInstall}
                                 />
                             </React.Fragment>
                             :
