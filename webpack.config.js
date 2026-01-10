@@ -236,6 +236,7 @@ module.exports = (env, argv) => ({
                 { from: 'images', to: 'images' },
                 { from: 'screenshots/*.webp', to: './' },
                 { from: '.well-known', to: '.well-known' },
+                { from: 'public/.htaccess', to: '.htaccess', toType: 'file' },
             ]
         }),
         new MiniCssExtractPlugin({
