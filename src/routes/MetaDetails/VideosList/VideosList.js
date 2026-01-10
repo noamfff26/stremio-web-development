@@ -6,7 +6,7 @@ const classnames = require('classnames');
 const { t } = require('i18next');
 const { useServices } = require('stremio/services');
 const { useProfile } = require('stremio/common');
-const { Image, SearchBar, Toggle, Video } = require('stremio/components');
+const { Image, SearchBar, Toggle, Video, DelayedRenderer } = require('stremio/components');
 const SeasonsBar = require('./SeasonsBar');
 const { default: EpisodePicker } = require('../EpisodePicker');
 const styles = require('./styles');
@@ -105,6 +105,19 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
         }
     };
 
+    const [hasDelayed, setHasDelayed] = React.useState(false);
+
+    React.useEffect(() => {
+        if (metaItem && metaItem.content.type !== 'Loading') {
+            const timer = setTimeout(() => {
+                setHasDelayed(true);
+            }, 800);
+            return () => clearTimeout(timer);
+        } else {
+            setHasDelayed(false);
+        }
+    }, [metaItem]);
+
     return (
         <div className={classnames(className, styles['videos-list-container'])}>
             {
@@ -122,11 +135,24 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                     </React.Fragment>
                     :
                     metaItem.content.type === 'Err' || videosForSeason.length === 0 ?
-                        <div className={styles['message-container']}>
-                            <EpisodePicker className={styles['episode-picker']} onSubmit={onSeasonSearch} />
-                            <Image className={styles['image']} src={require('/images/empty.png')} alt={' '} />
-                            <div className={styles['label']}>{t('ERR_NO_VIDEOS_FOR_META')}</div>
-                        </div>
+                        !hasDelayed ?
+                            <React.Fragment>
+                                <SeasonsBar.Placeholder className={styles['seasons-bar']} />
+                                <SearchBar.Placeholder className={styles['search-bar']} title={t('SEARCH_VIDEOS')} />
+                                <div className={styles['videos-scroll-container']}>
+                                    <Video.Placeholder />
+                                    <Video.Placeholder />
+                                    <Video.Placeholder />
+                                    <Video.Placeholder />
+                                    <Video.Placeholder />
+                                </div>
+                            </React.Fragment>
+                            :
+                            <div className={styles['message-container']}>
+                                <EpisodePicker className={styles['episode-picker']} onSubmit={onSeasonSearch} />
+                                <Image className={styles['image']} src={require('/images/empty.png')} alt={' '} />
+                                <div className={styles['label']}>{t('ERR_NO_VIDEOS_FOR_META')}</div>
+                            </div>
                         :
                         <React.Fragment>
                             {
