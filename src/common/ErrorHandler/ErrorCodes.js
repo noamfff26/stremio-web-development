@@ -180,17 +180,24 @@ const ERROR_CODES = {
  * Maps error types and codes to enhanced error information
  */
 const mapErrorToCode = (error) => {
+    // Safety check - ensure error exists
+    if (!error) {
+        return ERROR_CODES.UNKNOWN_ERROR;
+    }
+
     // Handle network errors
     if (!navigator.onLine) {
         return ERROR_CODES.OFFLINE;
     }
 
-    if (error.message?.toLowerCase().includes('network') ||
-        error.message?.toLowerCase().includes('fetch')) {
+    // Get error message safely
+    const errorMessage = String(error.message || error.toString?.() || '').toLowerCase();
+
+    if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
         return ERROR_CODES.NETWORK_ERROR;
     }
 
-    if (error.message?.toLowerCase().includes('timeout')) {
+    if (errorMessage.includes('timeout')) {
         return ERROR_CODES.CONNECTION_TIMEOUT;
     }
 
@@ -205,14 +212,12 @@ const mapErrorToCode = (error) => {
     }
 
     // Handle authentication errors
-    if (error.message?.toLowerCase().includes('auth') ||
-        error.message?.toLowerCase().includes('unauthorized')) {
+    if (errorMessage.includes('auth') || errorMessage.includes('unauthorized')) {
         return ERROR_CODES.AUTH_FAILED;
     }
 
     // Handle storage errors
-    if (error.message?.toLowerCase().includes('quota') ||
-        error.message?.toLowerCase().includes('storage')) {
+    if (errorMessage.includes('quota') || errorMessage.includes('storage')) {
         return ERROR_CODES.STORAGE_FULL;
     }
 
