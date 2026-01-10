@@ -19,11 +19,14 @@ const styles = require('./styles');
 const SIGNUP_FORM = 'signup';
 const LOGIN_FORM = 'login';
 
-// Official Stremio addons to remove (installed by default on registration)
+// Official / default addons to remove (installed automatically by Stremio)
 const OFFICIAL_ADDONS_TO_REMOVE = [
     'https://v3-cinemeta.strem.io/manifest.json',
     'https://opensubtitles-v3.strem.io/manifest.json',
-    'https://watchhub.strem.io/manifest.json'
+    'https://watchhub.strem.io/manifest.json',
+    'https://caching.stremio.net/publicdomainmovies.now.sh/manifest.json',
+    'https://opensubtitles.strem.io/stremio/v1',
+    'https://v3-channels.strem.io/manifest.json'
 ];
 
 // Custom addons to install on signup
