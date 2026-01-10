@@ -186,27 +186,19 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                     onClick={() => setKeepAddons(!keepAddons)}
                 />
             </Option>
-            <div style={{ marginTop: '24px' }}>
+            <div className={styles['israel-addons-container']}>
                 <Button
                     className={'button'}
                     onClick={onInstallAddonsPack}
                     disabled={!profile?.auth?.user}
-                    style={{
-                        width: '100%',
-                        marginBottom: '12px',
-                        minHeight: '40px',
-                        fontSize: '1rem',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        justifyContent: 'center',
-                    }}
                 >
                     התקנת תוספים
                 </Button>
                 <Button
+                    className={'button'}
                     onClick={onBackupAddons}
                     disabled={!profile?.auth?.user}
-                    style={{ width: '100%', opacity: 0.7, fontSize: '0.9rem', borderRadius: '4px', textAlign: 'center', justifyContent: 'center' }}
+                    style={{ opacity: 0.7, fontSize: '0.9rem' }}
                 >
                     גיבוי תוספים קיימים
                 </Button>

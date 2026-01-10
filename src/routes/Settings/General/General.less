@@ -9,3 +9,36 @@
         color: var(--color-trakt) !important;
     }
 }
+
+.israel-addons-container {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    :global(.button) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3.5rem;
+        width: 100%;
+        padding: 0 2rem;
+        border-radius: 3.5rem;
+        font-weight: 500;
+        color: var(--primary-foreground-color);
+        background-color: var(--overlay-color);
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 1rem;
+
+        &:hover {
+            background-color: var(--overlay-color-hover);
+        }
+        
+        &:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    }
+}
