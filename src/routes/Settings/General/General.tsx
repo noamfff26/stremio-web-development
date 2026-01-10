@@ -40,28 +40,34 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
     }, []);
 
     const onInstallAddonsPack = useCallback(async () => {
+        const shouldRemove = window.confirm(
+            'Do you want to remove default Stremio addons (OpenSubtitles, WatchHub, etc.)?\n\nClick OK to REMOVE them.\nClick Cancel to KEEP them.'
+        );
+
         toast.show({
             type: 'info',
             title: 'Installing IL Addons Pack...',
             timeout: 3000
         });
 
-        // Remove old addons
-        for (const addonUrl of ADDONS_TO_REMOVE) {
-            try {
-                const response = await fetch(addonUrl);
-                const manifest = await response.json();
-                core.transport.dispatch({
-                    action: 'Ctx',
-                    args: {
-                        action: 'UninstallAddon',
+        // Remove old addons only if user confirmed
+        if (shouldRemove) {
+            for (const addonUrl of ADDONS_TO_REMOVE) {
+                try {
+                    const response = await fetch(addonUrl);
+                    const manifest = await response.json();
+                    core.transport.dispatch({
+                        action: 'Ctx',
                         args: {
-                            transportUrl: addonUrl,
-                            manifest
+                            action: 'UninstallAddon',
+                            args: {
+                                transportUrl: addonUrl,
+                                manifest
+                            }
                         }
-                    }
-                });
-            } catch (e) { console.error('Skip remove', addonUrl); }
+                    });
+                } catch (e) { console.error('Skip remove', addonUrl); }
+            }
         }
 
         // Install new addons
