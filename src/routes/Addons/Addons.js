@@ -132,9 +132,9 @@ const Addons = ({ urlParams, queryParams }) => {
                          <Icon className={styles['icon']} name={'add'} />
                          <div className={styles['add-button-label']}>{t('ADD_ADDON')}</div>
                      </Button>
-                     <Button className={styles['add-button-container']} title={'Install All Default Addons'} onClick={onInstallAllDefaultAddons}>
+                     <Button className={styles['add-button-container']} title={'התקן את כל התוספים'} onClick={onInstallAllDefaultAddons}>
                          <Icon className={styles['icon']} name={'addons'} />
-                         <div className={styles['add-button-label']}>{'Install All'}</div>
+                         <div className={styles['add-button-label']}>{'התקן הכל'}</div>
                      </Button>
                     <SearchBar
                         className={styles['search-bar']}
