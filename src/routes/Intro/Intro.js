@@ -279,24 +279,31 @@ const Intro = ({ queryParams }) => {
         const onCoreEvent = async ({ event, args }) => {
             switch (event) {
                 case 'UserAuthenticated': {
-                    closeLoaderModal();
                     // Remove specific addons and install custom addons if this was a signup
                     if (isSigningUpRef.current) {
                         isSigningUpRef.current = false;
+                        console.log('[Intro] User signed up, installing addons...');
+
                         try {
                             if (state.cleanInstall) {
-                                console.log('Starting addon removal...');
+                                console.log('[Intro] Starting addon removal...');
                                 await removeAddons(core);
-                                console.log('Addon removal complete');
+                                console.log('[Intro] Addon removal complete');
                             }
-                            console.log('Starting default addon installation...');
-                            await installDefaultAddons(core);
-                            console.log('Default addon installation complete');
+                            console.log('[Intro] Starting default addon installation...');
+                            const result = await installDefaultAddons(core);
+                            console.log('[Intro] Installation result:', result);
+                            console.log('[Intro] Default addon installation complete');
                         } catch (error) {
-                            console.error('Error during addon setup:', error);
+                            console.error('[Intro] Error during addon setup:', error);
                             // Don't block user from continuing even if addon setup fails
                         }
+
+                        console.log('[Intro] Addons setup finished, closing modal and redirecting...');
                     }
+
+                    closeLoaderModal();
+
                     if (routeFocused) {
                         window.location = '#/';
                     }
