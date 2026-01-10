@@ -309,10 +309,15 @@ const Addons = ({ urlParams, queryParams }) => {
                         buttons={installAllModalButtons}
                         onCloseRequest={closeInstallAllModal}>
                         <div className={styles['notice']}>
-                            פעולה זו תתקין את כל התוספים המומלצים ({DEFAULT_ADDONS.length} תוספים).
+                            <div style={{ marginBottom: '1rem', fontSize: '1.1rem', lineHeight: '1.6' }}>
+                                פעולה זו תתקין {DEFAULT_ADDONS.length} תוספים מומלצים לשימוש מיטבי באפליקציה.
+                            </div>
+                            <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                                התוספים כוללים: קטלוגים, כתוביות בעברית, ומקורות סטרימינג.
+                            </div>
                         </div>
                         <Checkbox
-                            label={'הסר תוספים קיימים לפני ההתקנה'}
+                            label={'הסר תוספים קיימים לפני ההתקנה (מומלץ)'}
                             checked={cleanInstallSelected}
                             onChange={toggleCleanInstall}
                         />
