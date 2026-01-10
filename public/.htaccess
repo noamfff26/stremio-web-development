@@ -1,4 +1,4 @@
-# Enable WASM MIME type
+# Hostinger/Apache: serve WASM correctly
 AddType application/wasm .wasm
 
 # Enable GZIP compression
