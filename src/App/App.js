@@ -7,6 +7,7 @@ const { Router } = require('stremio-router');
 const { Core, Shell, Chromecast, DragAndDrop, KeyboardShortcuts, ServicesProvider } = require('stremio/services');
 const { NotFound } = require('stremio/routes');
 const { FileDropProvider, PlatformProvider, ToastProvider, TooltipProvider, ShortcutsProvider, CONSTANTS, withCoreSuspender, useShell, useBinaryState } = require('stremio/common');
+const NetworkStatus = require('stremio/common/NetworkStatus');
 const ServicesToaster = require('./ServicesToaster');
 const DeepLinkHandler = require('./DeepLinkHandler');
 const SearchParamsHandler = require('./SearchParamsHandler');
@@ -217,6 +218,7 @@ const App = () => {
                                                 {
                                                     shortcutModalOpen && <ShortcutsModal onClose={closeShortcutsModal}/>
                                                 }
+                                                <NetworkStatus />
                                                 <ServicesToaster />
                                                 <DeepLinkHandler />
                                                 <SearchParamsHandler />

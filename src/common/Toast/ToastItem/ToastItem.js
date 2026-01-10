@@ -8,7 +8,7 @@ const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button } = require('stremio/components');
 const styles = require('./styles');
 
-const ToastItem = ({ title, message, dataset, onSelect, onClose, ...props }) => {
+const ToastItem = ({ title, message, action, dataset, onSelect, onClose, ...props }) => {
     const { t } = useTranslation();
     const type = React.useMemo(() => {
         return ['success', 'alert', 'info', 'error'].includes(props.type) ?
@@ -52,6 +52,13 @@ const ToastItem = ({ title, message, dataset, onSelect, onClose, ...props }) => 
             });
         }
     }, [dataset, onClose]);
+    const actionButtonOnClick = React.useCallback((event) => {
+        event.nativeEvent.selectToastPrevented = true;
+        event.nativeEvent.closeToastPrevented = true;
+        if (typeof action?.onClick === 'function') {
+            action.onClick(event);
+        }
+    }, [action]);
     return (
         <Button className={classnames(styles['toast-item-container'], styles[type])} tabIndex={-1} onClick={toastOnClick}>
             {
@@ -76,6 +83,19 @@ const ToastItem = ({ title, message, dataset, onSelect, onClose, ...props }) => 
                         null
                 }
             </div>
+            {
+                action && typeof action.label === 'string' ?
+                    <Button
+                        className={styles['action-button-container']}
+                        title={t(action.label)}
+                        tabIndex={-1}
+                        onClick={actionButtonOnClick}
+                    >
+                        <div className={styles['action-label']}>{t(action.label)}</div>
+                    </Button>
+                    :
+                    null
+            }
             <Button className={styles['close-button-container']} title={t('BUTTON_CLOSE')} tabIndex={-1} onClick={closeButtonOnClick}>
                 <Icon className={styles['icon']} name={'close'} />
             </Button>
@@ -88,6 +108,10 @@ ToastItem.propTypes = {
     title: PropTypes.string,
     message: PropTypes.string,
     icon: PropTypes.string,
+    action: PropTypes.shape({
+        label: PropTypes.string.isRequired,
+        onClick: PropTypes.func.isRequired
+    }),
     dataset: PropTypes.object,
     onSelect: PropTypes.func,
     onClose: PropTypes.func

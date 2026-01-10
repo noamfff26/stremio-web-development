@@ -3,10 +3,13 @@
 const React = require('react');
 const { useServices } = require('stremio/services');
 const { useToast } = require('stremio/common');
+const { ErrorHandler } = require('stremio/common/ErrorHandler');
 
 const ServicesToaster = () => {
     const { core, dragAndDrop } = useServices();
     const toast = useToast();
+    const errorHandler = React.useMemo(() => new ErrorHandler(toast), [toast]);
+
     React.useEffect(() => {
         const onCoreEvent = ({ event, args }) => {
             switch (event) {
@@ -23,15 +26,29 @@ const ServicesToaster = () => {
                         break;
                     }
 
-                    toast.show({
-                        type: 'error',
-                        title: args.source.event,
-                        message: args.error.message,
-                        timeout: 4000,
-                        dataset: {
-                            type: 'CoreEvent'
+                    // Use enhanced error handler
+                    errorHandler.showToast(
+                        args.error,
+                        {
+                            type: 'CoreEvent',
+                            source: args.source.event
+                        },
+                        {
+                            timeout: 6000,
+                            onRetry: () => {
+                                // Auto-retry logic based on event type
+                                if (args.source.event === 'AddonInstalled') {
+                                    core.transport.dispatch({
+                                        action: 'Ctx',
+                                        args: {
+                                            action: 'InstallAddon',
+                                            args: args.source.args
+                                        }
+                                    });
+                                }
+                            }
                         }
-                    });
+                    );
                     break;
                 }
                 case 'TorrentParsed': {

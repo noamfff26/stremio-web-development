@@ -75,11 +75,34 @@
         }
     }
 
+    .action-button-container {
+        padding: 0.5rem 1rem;
+        margin-right: 0.5rem;
+        border-radius: 3px;
+        background-color: var(--primary-accent-color);
+
+        .action-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-foreground-color);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        &:hover {
+            background-color: @color-primary-light1;
+        }
+
+        &:focus {
+            outline-color: var(--primary-accent-color);
+        }
+    }
+
     .close-button-container {
         width: 2rem;
         height: 2rem;
         border-radius: 3px;
-        
+
         .icon {
             display: block;
             width: 100%;

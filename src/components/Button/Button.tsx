@@ -12,6 +12,7 @@ type Props = {
     target?: string
     title?: string,
     disabled?: boolean,
+    loading?: boolean,
     tabIndex?: number,
     children: React.ReactNode,
     onKeyDown?: (event: React.KeyboardEvent) => void,
@@ -23,8 +24,9 @@ type Props = {
     onDoubleClick?: () => void,
 };
 
-const Button = forwardRef(({ className, href, disabled, children, onLongPress, onDoubleClick, ...props }: Props, ref) => {
+const Button = forwardRef(({ className, href, disabled, loading, children, onLongPress, onDoubleClick, ...props }: Props, ref) => {
     const longPress = useLongPress(onLongPress!, { detect: LongPressEventType.Pointer });
+    const isDisabled = disabled || loading;
 
     const onKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
         if (typeof props.onKeyDown === 'function') {
@@ -60,7 +62,10 @@ const Button = forwardRef(({ className, href, disabled, children, onLongPress, o
             tabIndex: 0,
             ...props,
             ref,
-            className: classNames(className, styles['button-container'], { 'disabled': disabled }),
+            className: classNames(className, styles['button-container'], {
+                'disabled': isDisabled,
+                'loading': loading
+            }),
             href,
             onKeyDown,
             onMouseDown,
