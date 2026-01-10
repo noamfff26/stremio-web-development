@@ -173,45 +173,49 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
             <User profile={profile} />
         </Section>
 
-        <Section>
-            {
-                profile?.auth?.user &&
-                <div style={{ padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', margin: '20px 0' }}>
-                    <h3 style={{ color: '#fff', marginBottom: '15px', fontSize: '1.2rem' }}>Israel Addons Pack</h3>
-                    
-                    <Option
-                        label={'Keep default Stremio addons'}
-                        description={'If disabled, official addons like OpenSubtitles v3 will be removed'}
-                    >
-                        <Toggle
-                            checked={keepAddons}
-                            onClick={() => setKeepAddons(!keepAddons)}
-                        />
-                    </Option>
+        <Section style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '18px', margin: '30px 0', padding: '24px 18px', boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)' }}>
+            <h3 style={{ color: '#fff', marginBottom: '18px', fontSize: '1.3rem', fontWeight: 900, letterSpacing: '0.5px', textAlign: 'right' }}>
+                התקנת תוספים של סטרימיו ישראל
+            </h3>
+            <Option
+                label={'השאר תוספים רשמיים של סטרימיו'}
+                description={'אם תכבה, תוספים כמו OpenSubtitles v3 יוסרו'}
+            >
+                <Toggle
+                    checked={keepAddons}
+                    onClick={() => setKeepAddons(!keepAddons)}
+                />
+            </Option>
+            <div style={{ marginTop: '24px' }}>
+                <Button
+                    className={'purple'}
+                    label={'התקן חבילת תוספים'}
+                    onClick={onInstallAddonsPack}
+                    disabled={!profile?.auth?.user}
+                    style={{
+                        width: '100%',
+                        padding: '18px',
+                        marginBottom: '12px',
+                        fontWeight: 'bold',
+                        fontSize: '1.25rem',
+                        height: 'auto',
+                        minHeight: '48px',
+                        borderRadius: '12px',
+                        letterSpacing: '1px',
+                        textAlign: 'center',
+                        direction: 'rtl'
+                    }}
+                />
+                <Button
+                    label={'גיבוי תוספים קיימים'}
+                    onClick={onBackupAddons}
+                    disabled={!profile?.auth?.user}
+                    style={{ width: '100%', opacity: 0.7, fontSize: '1rem', borderRadius: '12px', direction: 'rtl' }}
+                />
+            </div>
+        </Section>
 
-                    <div style={{ marginTop: '30px' }}>
-                        <Button
-                            className={'purple'}
-                            label={'התקנת תוספים של סטרימיו ישראל'}
-                            onClick={onInstallAddonsPack}
-                            style={{ 
-                                width: '100%', 
-                                padding: '15px', 
-                                marginBottom: '15px', 
-                                fontWeight: 'bold', 
-                                fontSize: '1.3rem', 
-                                height: 'auto',
-                                minHeight: '50px'
-                            }}
-                        />
-                        <Button
-                            label={'Backup Existing Addons'}
-                            onClick={onBackupAddons}
-                            style={{ width: '100%', opacity: 0.6, fontSize: '0.9rem' }}
-                        />
-                    </div>
-                </div>
-            }
+        <Section>
             {
                 profile?.auth?.user &&
                     <Link
