@@ -45,6 +45,17 @@ const installDefaultAddons = async (core) => {
     let successCount = 0;
     let failCount = 0;
 
+    // Temporarily disable error toasts during bulk installation
+    const originalErrorHandler = core.transport._errorHandler;
+    const silentErrorHandler = {
+        handle: () => {},
+        showToast: () => {}
+    };
+
+    if (core.transport._errorHandler) {
+        core.transport._errorHandler = silentErrorHandler;
+    }
+
     const installPromises = DEFAULT_ADDONS.map(async (addonUrl) => {
         try {
             const response = await fetch(addonUrl, {
@@ -56,7 +67,7 @@ const installDefaultAddons = async (core) => {
             });
 
             if (!response.ok) {
-                console.error('Failed to fetch addon manifest:', addonUrl, response.status);
+                console.log('[AddonInstaller] Failed to fetch:', addonUrl, response.status);
                 failCount++;
                 return;
             }
@@ -64,7 +75,7 @@ const installDefaultAddons = async (core) => {
             const manifest = await response.json();
 
             if (!manifest || !manifest.id || !manifest.name) {
-                console.error('Invalid manifest for addon:', addonUrl);
+                console.log('[AddonInstaller] Invalid manifest:', addonUrl);
                 failCount++;
                 return;
             }
@@ -80,16 +91,23 @@ const installDefaultAddons = async (core) => {
                 }
             });
 
-            console.log('Successfully queued addon installation:', manifest.name, addonUrl);
+            console.log('[AddonInstaller] Installed:', manifest.name);
             successCount++;
         } catch (error) {
-            console.error('Failed to install addon:', addonUrl, error.message);
+            console.log('[AddonInstaller] Skipped:', addonUrl, error.message);
             failCount++;
         }
     });
 
     await Promise.allSettled(installPromises);
-    console.log(`Addon installation complete: ${successCount} succeeded, ${failCount} failed`);
+
+    // Restore original error handler
+    if (originalErrorHandler) {
+        core.transport._errorHandler = originalErrorHandler;
+    }
+
+    console.log(`[AddonInstaller] Complete: ${successCount} installed, ${failCount} skipped`);
+    return { successCount, failCount };
 };
 
 module.exports = {

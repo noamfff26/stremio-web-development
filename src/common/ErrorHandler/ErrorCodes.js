@@ -8,170 +8,170 @@ const ERROR_CODES = {
     // Network errors (1xxx)
     NETWORK_ERROR: {
         code: 1000,
-        title: 'NETWORK_ERROR_TITLE',
-        message: 'NETWORK_ERROR_MESSAGE',
+        title: 'שגיאת רשת',
+        message: 'אין אפשרות להתחבר לשרת. אנא בדוק את החיבור לאינטרנט.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'CHECK_INTERNET_CONNECTION',
-            'TRY_AGAIN_LATER',
-            'CHECK_FIREWALL_SETTINGS'
+            'בדוק את החיבור לאינטרנט',
+            'נסה שוב מאוחר יותר',
+            'בדוק הגדרות חומת אש'
         ]
     },
     CONNECTION_TIMEOUT: {
         code: 1001,
-        title: 'CONNECTION_TIMEOUT_TITLE',
-        message: 'CONNECTION_TIMEOUT_MESSAGE',
+        title: 'תם זמן החיבור',
+        message: 'החיבור לשרת ארך זמן רב מדי.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'CHECK_INTERNET_SPEED',
-            'TRY_AGAIN'
+            'בדוק את מהירות האינטרנט',
+            'נסה שוב'
         ]
     },
     OFFLINE: {
         code: 1002,
-        title: 'OFFLINE_TITLE',
-        message: 'OFFLINE_MESSAGE',
+        title: 'אין חיבור לאינטרנט',
+        message: 'נראה שאינך מחובר לאינטרנט.',
         severity: 'warning',
         recoverable: true,
         suggestions: [
-            'CONNECT_TO_INTERNET'
+            'התחבר לאינטרנט'
         ]
     },
 
     // Authentication errors (2xxx)
     AUTH_FAILED: {
         code: 2000,
-        title: 'AUTH_FAILED_TITLE',
-        message: 'AUTH_FAILED_MESSAGE',
+        title: 'שגיאת אימות',
+        message: 'פרטי ההתחברות שגויים.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'CHECK_CREDENTIALS',
-            'RESET_PASSWORD'
+            'בדוק את שם המשתמש והסיסמה',
+            'אפס את הסיסמה'
         ]
     },
     SESSION_EXPIRED: {
         code: 2001,
-        title: 'SESSION_EXPIRED_TITLE',
-        message: 'SESSION_EXPIRED_MESSAGE',
+        title: 'פג תוקף ההתחברות',
+        message: 'פג תוקף ההתחברות שלך.',
         severity: 'warning',
         recoverable: true,
         suggestions: [
-            'LOGIN_AGAIN'
+            'התחבר שוב'
         ]
     },
 
     // Addon errors (3xxx)
     ADDON_INSTALL_FAILED: {
         code: 3000,
-        title: 'ADDON_INSTALL_FAILED_TITLE',
-        message: 'ADDON_INSTALL_FAILED_MESSAGE',
+        title: 'התקנת התוסף נכשלה',
+        message: 'לא ניתן להתקין את התוסף. אנא בדוק את כתובת ה-URL ונסה שוב.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'CHECK_ADDON_URL',
-            'TRY_DIFFERENT_ADDON',
-            'CONTACT_ADDON_DEVELOPER'
+            'בדוק את כתובת התוסף',
+            'נסה תוסף אחר',
+            'צור קשר עם מפתח התוסף'
         ]
     },
     ADDON_LOAD_FAILED: {
         code: 3001,
-        title: 'ADDON_LOAD_FAILED_TITLE',
-        message: 'ADDON_LOAD_FAILED_MESSAGE',
+        title: 'טעינת התוסף נכשלה',
+        message: 'לא ניתן לטעון את התוסף.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'REINSTALL_ADDON',
-            'CHECK_ADDON_STATUS'
+            'התקן מחדש את התוסף',
+            'בדוק את מצב התוסף'
         ]
     },
 
     // Streaming errors (4xxx)
     STREAM_NOT_FOUND: {
         code: 4000,
-        title: 'STREAM_NOT_FOUND_TITLE',
-        message: 'STREAM_NOT_FOUND_MESSAGE',
+        title: 'לא נמצא stream',
+        message: 'לא נמצאו מקורות זמינים לתוכן זה.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'TRY_DIFFERENT_STREAM',
-            'CHECK_ADDONS',
-            'SEARCH_ALTERNATIVE'
+            'נסה stream אחר',
+            'בדוק את התוספים',
+            'חפש חלופה'
         ]
     },
     STREAM_LOAD_FAILED: {
         code: 4001,
-        title: 'STREAM_LOAD_FAILED_TITLE',
-        message: 'STREAM_LOAD_FAILED_MESSAGE',
+        title: 'טעינת Stream נכשלה',
+        message: 'אירעה שגיאה בעת טעינת הווידאו.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'CHECK_INTERNET_SPEED',
-            'TRY_EXTERNAL_PLAYER',
-            'TRY_DIFFERENT_QUALITY'
+            'בדוק את מהירות האינטרנט',
+            'נסה נגן חיצוני',
+            'נסה איכות אחרת'
         ]
     },
     TORRENT_PARSE_FAILED: {
         code: 4002,
-        title: 'TORRENT_PARSE_FAILED_TITLE',
-        message: 'TORRENT_PARSE_FAILED_MESSAGE',
+        title: 'שגיאה בקריאת Torrent',
+        message: 'לא ניתן לקרוא את קובץ ה-Torrent.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'CHECK_FILE_FORMAT',
-            'DOWNLOAD_AGAIN'
+            'בדוק את פורמט הקובץ',
+            'הורד שוב'
         ]
     },
 
     // Library errors (5xxx)
     LIBRARY_SYNC_FAILED: {
         code: 5000,
-        title: 'LIBRARY_SYNC_FAILED_TITLE',
-        message: 'LIBRARY_SYNC_FAILED_MESSAGE',
+        title: 'סנכרון הספרייה נכשל',
+        message: 'לא ניתן לסנכרן את הספרייה שלך.',
         severity: 'warning',
         recoverable: true,
         suggestions: [
-            'CHECK_LOGIN_STATUS',
-            'TRY_MANUAL_SYNC'
+            'בדוק את מצב ההתחברות',
+            'נסה סנכרון ידני'
         ]
     },
 
     // Storage errors (6xxx)
     STORAGE_FULL: {
         code: 6000,
-        title: 'STORAGE_FULL_TITLE',
-        message: 'STORAGE_FULL_MESSAGE',
+        title: 'האחסון מלא',
+        message: 'אין מספיק מקום באחסון.',
         severity: 'warning',
         recoverable: true,
         suggestions: [
-            'CLEAR_CACHE',
-            'CLEAR_DATA'
+            'נקה את המטמון',
+            'מחק נתונים'
         ]
     },
     STORAGE_ACCESS_DENIED: {
         code: 6001,
-        title: 'STORAGE_ACCESS_DENIED_TITLE',
-        message: 'STORAGE_ACCESS_DENIED_MESSAGE',
+        title: 'הגישה לאחסון נדחתה',
+        message: 'אין הרשאה לגשת לאחסון.',
         severity: 'error',
         recoverable: false,
         suggestions: [
-            'CHECK_BROWSER_PERMISSIONS'
+            'בדוק הרשאות הדפדפן'
         ]
     },
 
     // Generic errors (9xxx)
     UNKNOWN_ERROR: {
         code: 9000,
-        title: 'UNKNOWN_ERROR_TITLE',
-        message: 'UNKNOWN_ERROR_MESSAGE',
+        title: 'אירעה שגיאה',
+        message: 'אירעה שגיאה לא צפויה. אנא נסה שוב.',
         severity: 'error',
         recoverable: true,
         suggestions: [
-            'RELOAD_PAGE',
-            'CLEAR_DATA',
-            'CONTACT_SUPPORT'
+            'טען מחדש את הדף',
+            'נקה נתונים',
+            'פנה לתמיכה'
         ]
     }
 };
