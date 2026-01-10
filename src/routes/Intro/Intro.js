@@ -23,9 +23,21 @@ const LOGIN_FORM = 'login';
 
 // Function to remove specific addons (only non-protected)
 const removeAddons = async (core) => {
-    for (const addonUrl of ADDONS_TO_REMOVE) {
+    const removePromises = ADDONS_TO_REMOVE.map(async (addonUrl) => {
         try {
-            const response = await fetch(addonUrl);
+            const response = await fetch(addonUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000) // 5 second timeout
+            });
+
+            if (!response.ok) {
+                console.log('Failed to fetch addon manifest:', addonUrl, response.status);
+                return;
+            }
+
             const manifest = await response.json();
             core.transport.dispatch({
                 action: 'Ctx',
@@ -39,17 +51,43 @@ const removeAddons = async (core) => {
             });
             console.log('Removed addon:', addonUrl);
         } catch (error) {
-            console.log('Skipping addon (may be protected or not installed):', addonUrl);
+            console.log('Skipping addon (may be protected or not installed):', addonUrl, error.message);
         }
-    }
+    });
+
+    // Wait for all removals to complete (or fail)
+    await Promise.allSettled(removePromises);
 };
 
 // Function to install custom addons
 const installDefaultAddons = async (core) => {
-    for (const addonUrl of DEFAULT_ADDONS) {
+    let successCount = 0;
+    let failCount = 0;
+
+    const installPromises = DEFAULT_ADDONS.map(async (addonUrl) => {
         try {
-            const response = await fetch(addonUrl);
+            const response = await fetch(addonUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                signal: AbortSignal.timeout(10000) // 10 second timeout per addon
+            });
+
+            if (!response.ok) {
+                console.error('Failed to fetch addon manifest:', addonUrl, response.status);
+                failCount++;
+                return;
+            }
+
             const manifest = await response.json();
+
+            if (!manifest || !manifest.id || !manifest.name) {
+                console.error('Invalid manifest for addon:', addonUrl);
+                failCount++;
+                return;
+            }
+
             core.transport.dispatch({
                 action: 'Ctx',
                 args: {
@@ -60,10 +98,17 @@ const installDefaultAddons = async (core) => {
                     }
                 }
             });
+
+            console.log('Successfully queued addon installation:', manifest.name, addonUrl);
+            successCount++;
         } catch (error) {
-            console.error('Failed to install addon:', addonUrl, error);
+            console.error('Failed to install addon:', addonUrl, error.message);
+            failCount++;
         }
-    }
+    });
+
+    await Promise.allSettled(installPromises);
+    console.log(`Addon installation complete: ${successCount} succeeded, ${failCount} failed`);
 };
 
 const Intro = ({ queryParams }) => {
@@ -329,10 +374,19 @@ const Intro = ({ queryParams }) => {
                     // Remove specific addons and install custom addons if this was a signup
                     if (isSigningUpRef.current) {
                         isSigningUpRef.current = false;
-                        if (state.cleanInstall) {
-                            await removeAddons(core);
+                        try {
+                            if (state.cleanInstall) {
+                                console.log('Starting addon removal...');
+                                await removeAddons(core);
+                                console.log('Addon removal complete');
+                            }
+                            console.log('Starting default addon installation...');
+                            await installDefaultAddons(core);
+                            console.log('Default addon installation complete');
+                        } catch (error) {
+                            console.error('Error during addon setup:', error);
+                            // Don't block user from continuing even if addon setup fails
                         }
-                        await installDefaultAddons(core);
                     }
                     if (routeFocused) {
                         window.location = '#/';
