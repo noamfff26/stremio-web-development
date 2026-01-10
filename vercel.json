@@ -1,22 +1,28 @@
 {
-  "buildCommand": "npm install -g pnpm && pnpm install && pnpm run build",
-  "outputDirectory": "build",
-  "framework": null,
-  "headers": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*).wasm",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/wasm"
-        }
-      ]
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/((?!.*\\.).*)",
-      "destination": "/index.html"
+      "src": "/(.*)\\.wasm",
+      "headers": {
+        "Content-Type": "application/wasm"
+      },
+      "continue": true
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
