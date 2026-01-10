@@ -16,9 +16,12 @@ const Player = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
     const {
         subtitlesLanguageSelect,
         subtitlesSizeSelect,
+        subtitlesFontSelect,
         subtitlesTextColorInput,
         subtitlesBackgroundColorInput,
+        subtitlesBackgroundOpacitySelect,
         subtitlesOutlineColorInput,
+        subtitlesOutlineSizeSelect,
         audioLanguageSelect,
         surroundSoundToggle,
         seekTimeDurationSelect,
@@ -47,6 +50,12 @@ const Player = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                         {...subtitlesSizeSelect}
                     />
                 </Option>
+                <Option label={'SETTINGS_SUBTITLES_FONT'}>
+                    <MultiselectMenu
+                        className={'multiselect'}
+                        {...subtitlesFontSelect}
+                    />
+                </Option>
                 <Option label={'SETTINGS_SUBTITLES_COLOR'}>
                     <ColorInput
                         className={'color-input'}
@@ -59,10 +68,22 @@ const Player = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                         {...subtitlesBackgroundColorInput}
                     />
                 </Option>
+                <Option label={'SETTINGS_SUBTITLES_BACKGROUND_OPACITY'}>
+                    <MultiselectMenu
+                        className={'multiselect'}
+                        {...subtitlesBackgroundOpacitySelect}
+                    />
+                </Option>
                 <Option label={'SETTINGS_SUBTITLES_COLOR_OUTLINE'}>
                     <ColorInput
                         className={'color-input'}
                         {...subtitlesOutlineColorInput}
+                    />
+                </Option>
+                <Option label={'SETTINGS_SUBTITLES_OUTLINE_SIZE'}>
+                    <MultiselectMenu
+                        className={'multiselect'}
+                        {...subtitlesOutlineSizeSelect}
                     />
                 </Option>
             </Category>

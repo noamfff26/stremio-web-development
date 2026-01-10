@@ -94,16 +94,19 @@ const Player = ({ urlParams, queryParams }) => {
 
     const onImplementationChanged = React.useCallback(() => {
         video.setProp('subtitlesSize', settings.subtitlesSize);
+        video.setProp('subtitlesFont', settings.subtitlesFont);
         video.setProp('subtitlesOffset', settings.subtitlesOffset);
         video.setProp('subtitlesTextColor', settings.subtitlesTextColor);
         video.setProp('subtitlesBackgroundColor', settings.subtitlesBackgroundColor);
+        video.setProp('subtitlesBackgroundOpacity', settings.subtitlesBackgroundOpacity);
         video.setProp('subtitlesOutlineColor', settings.subtitlesOutlineColor);
+        video.setProp('subtitlesOutlineSize', settings.subtitlesOutlineSize);
         video.setProp('extraSubtitlesSize', settings.subtitlesSize);
         video.setProp('extraSubtitlesOffset', settings.subtitlesOffset);
         video.setProp('extraSubtitlesTextColor', settings.subtitlesTextColor);
         video.setProp('extraSubtitlesBackgroundColor', settings.subtitlesBackgroundColor);
         video.setProp('extraSubtitlesOutlineColor', settings.subtitlesOutlineColor);
-    }, [settings.subtitlesSize, settings.subtitlesOffset, settings.subtitlesTextColor, settings.subtitlesBackgroundColor, settings.subtitlesOutlineColor]);
+    }, [settings.subtitlesSize, settings.subtitlesFont, settings.subtitlesOffset, settings.subtitlesTextColor, settings.subtitlesBackgroundColor, settings.subtitlesBackgroundOpacity, settings.subtitlesOutlineColor, settings.subtitlesOutlineSize]);
 
     const handleNextVideoNavigation = React.useCallback((deepLinks, bingeWatching, ended) => {
         if (ended) {
@@ -411,6 +414,20 @@ const Player = ({ urlParams, queryParams }) => {
         video.setProp('subtitlesOutlineColor', settings.subtitlesOutlineColor);
         video.setProp('extraSubtitlesOutlineColor', settings.subtitlesOutlineColor);
     }, [settings.subtitlesOutlineColor]);
+
+    React.useEffect(() => {
+        video.setProp('subtitlesFont', settings.subtitlesFont);
+    }, [settings.subtitlesFont]);
+
+    React.useEffect(() => {
+        video.setProp('subtitlesBackgroundOpacity', settings.subtitlesBackgroundOpacity);
+        video.setProp('extraSubtitlesBackgroundOpacity', settings.subtitlesBackgroundOpacity);
+    }, [settings.subtitlesBackgroundOpacity]);
+
+    React.useEffect(() => {
+        video.setProp('subtitlesOutlineSize', settings.subtitlesOutlineSize);
+        video.setProp('extraSubtitlesOutlineSize', settings.subtitlesOutlineSize);
+    }, [settings.subtitlesOutlineSize]);
 
     React.useEffect(() => {
         !seeking && timeChanged(video.state.time, video.state.duration, video.state.manifest?.name);

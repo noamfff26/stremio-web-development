@@ -108,6 +108,72 @@ const usePlayerOptions = (profile: Profile) => {
         }
     }), [profile.settings]);
 
+    const subtitlesFontSelect = useMemo(() => ({
+        options: CONSTANTS.SUBTITLES_FONTS.map((font) => ({
+            value: font,
+            label: font
+        })),
+        value: profile.settings.subtitlesFont,
+        onSelect: (value: string) => {
+            core.transport.dispatch({
+                action: 'Ctx',
+                args: {
+                    action: 'UpdateSettings',
+                    args: {
+                        ...profile.settings,
+                        subtitlesFont: value
+                    }
+                }
+            });
+        }
+    }), [profile.settings]);
+
+    const subtitlesOutlineSizeSelect = useMemo(() => ({
+        options: CONSTANTS.SUBTITLES_OUTLINE_SIZES.map((size) => ({
+            value: `${size}`,
+            label: size === 0 ? t('NONE') : `${size}px`
+        })),
+        value: `${profile.settings.subtitlesOutlineSize}`,
+        title: () => {
+            return profile.settings.subtitlesOutlineSize === 0 ? t('NONE') : `${profile.settings.subtitlesOutlineSize}px`;
+        },
+        onSelect: (value: string) => {
+            core.transport.dispatch({
+                action: 'Ctx',
+                args: {
+                    action: 'UpdateSettings',
+                    args: {
+                        ...profile.settings,
+                        subtitlesOutlineSize: parseInt(value, 10)
+                    }
+                }
+            });
+        }
+    }), [profile.settings]);
+
+    const subtitlesBackgroundOpacitySelect = useMemo(() => ({
+        options: CONSTANTS.SUBTITLES_BACKGROUND_OPACITIES.map((opacity) => ({
+            value: `${opacity}`,
+            label: `${Math.round(opacity * 100)}%`
+        })),
+        value: `${profile.settings.subtitlesBackgroundOpacity}`,
+        title: () => {
+            return `${Math.round(profile.settings.subtitlesBackgroundOpacity * 100)}%`;
+        },
+        onSelect: (value: string) => {
+            core.transport.dispatch({
+                action: 'Ctx',
+                args: {
+                    action: 'UpdateSettings',
+                    args: {
+                        ...profile.settings,
+                        subtitlesBackgroundOpacity: parseFloat(value)
+                    }
+                }
+            });
+        }
+    }), [profile.settings]);
+
     const audioLanguageSelect = useMemo(() => ({
         options: sortedLanguageOptions,
         value: profile.settings.audioLanguage,
@@ -340,7 +406,10 @@ const usePlayerOptions = (profile: Profile) => {
         subtitlesSizeSelect,
         subtitlesTextColorInput,
         subtitlesBackgroundColorInput,
+        subtitlesBackgroundOpacitySelect,
         subtitlesOutlineColorInput,
+        subtitlesOutlineSizeSelect,
+        subtitlesFontSelect,
         audioLanguageSelect,
         surroundSoundToggle,
         seekTimeDurationSelect,
