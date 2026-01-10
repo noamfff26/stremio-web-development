@@ -192,19 +192,16 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                     <div style={{ marginTop: '30px' }}>
                         <Button
                             className={'purple'}
-                            label={'INSTALL ISRAEL ADDONS PACK'}
+                            label={'התקנת תוספים של סטרימיו ישראל'}
                             onClick={onInstallAddonsPack}
                             style={{ 
                                 width: '100%', 
-                                padding: '20px', 
+                                padding: '15px', 
                                 marginBottom: '15px', 
-                                fontWeight: '900', 
-                                fontSize: '1.4rem', 
-                                letterSpacing: '1.5px',
-                                background: 'linear-gradient(45deg, #6a5acd, #8a2be2)',
-                                boxShadow: '0 4px 15px rgba(138, 43, 226, 0.4)',
-                                border: '2px solid rgba(255,255,255,0.1)',
-                                textTransform: 'uppercase'
+                                fontWeight: 'bold', 
+                                fontSize: '1.3rem', 
+                                height: 'auto',
+                                minHeight: '50px'
                             }}
                         />
                         <Button
