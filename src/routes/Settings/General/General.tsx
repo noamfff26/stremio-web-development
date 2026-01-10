@@ -189,7 +189,6 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
             <div style={{ marginTop: '24px' }}>
                 <Button
                     className={'purple'}
-                    label={'התקן חבילת תוספים'}
                     onClick={onInstallAddonsPack}
                     disabled={!profile?.auth?.user}
                     style={{
@@ -205,13 +204,16 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                         textAlign: 'center',
                         direction: 'rtl'
                     }}
-                />
+                >
+                    התקן חבילת תוספים
+                </Button>
                 <Button
-                    label={'גיבוי תוספים קיימים'}
                     onClick={onBackupAddons}
                     disabled={!profile?.auth?.user}
                     style={{ width: '100%', opacity: 0.7, fontSize: '1rem', borderRadius: '12px', direction: 'rtl' }}
-                />
+                >
+                    גיבוי תוספים קיימים
+                </Button>
             </div>
         </Section>
 
