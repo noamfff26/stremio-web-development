@@ -19,14 +19,9 @@ const styles = require('./styles');
 const SIGNUP_FORM = 'signup';
 const LOGIN_FORM = 'login';
 
-// Official / default addons to remove (installed automatically by Stremio)
-const OFFICIAL_ADDONS_TO_REMOVE = [
-    'https://v3-cinemeta.strem.io/manifest.json',
-    'https://opensubtitles-v3.strem.io/manifest.json',
-    'https://watchhub.strem.io/manifest.json',
-    'https://caching.stremio.net/publicdomainmovies.now.sh/manifest.json',
-    'https://opensubtitles.strem.io/stremio/v1',
-    'https://v3-channels.strem.io/manifest.json'
+// Addons to remove on signup (only non-protected ones)
+const ADDONS_TO_REMOVE = [
+    'https://opensubtitles.strem.io/stremio/v1'
 ];
 
 // Custom addons to install on signup
@@ -41,9 +36,9 @@ const DEFAULT_ADDONS = [
     'https://mediafusion.elfhosted.com/D-S4RKbSD6JlfWRL-nYnqDocUvZn3RmrM6w3UaZ3TjU3zqijJP3y_GrqGAcG5xr2wNu0yODlYouSyzp3wzYJoimzoq4vFMSzTiYbxb4F-zyEwvM8zYMWPS-Drwng6fHj4tmTFZLq_4Bp5ie3Py_swmm36Xfck9q6knYjoeVPfqd9eiGWSfQWfrttzbLiMKQ8u56MXS0bX2mVz5RNrWIu_9AG2UsgaEvIGwpJWAWSGf7-GrVU_9ITu_ZPfLPEH2Uc-oowauGtrBAAtD1VCYCrn5RTACSpvac7St8e5dcTtBh8ECX1Fyvxbyh0MJNc5k52TKx3MRGoe8bWb-UGSo7Ows_FiFjrMbqYZO5PEWHZaTxJtBtH218ZRXso1E713WS7mQdVn5sEGaFBN2irnHGbLjTmTPXEKH4_YuMyPQh8XnjvHo2aA9ouipSboLwUa88LqaxsEUiFzWNCH9K316IobNCyYSNlfhA35uaOgR6DuywPkYXRkKZvd--jISqNvz5dta5pd_9mNqCrBEchoMMkvwgUKaeBoqhgredRYJQATQ3gU/manifest.json'
 ];
 
-// Function to remove official addons
-const removeOfficialAddons = async (core) => {
-    for (const addonUrl of OFFICIAL_ADDONS_TO_REMOVE) {
+// Function to remove specific addons (only non-protected)
+const removeAddons = async (core) => {
+    for (const addonUrl of ADDONS_TO_REMOVE) {
         try {
             const response = await fetch(addonUrl);
             const manifest = await response.json();
@@ -57,8 +52,9 @@ const removeOfficialAddons = async (core) => {
                     }
                 }
             });
+            console.log('Removed addon:', addonUrl);
         } catch (error) {
-            console.error('Failed to remove addon:', addonUrl, error);
+            console.log('Skipping addon (may be protected or not installed):', addonUrl);
         }
     }
 };
@@ -340,10 +336,10 @@ const Intro = ({ queryParams }) => {
             switch (event) {
                 case 'UserAuthenticated': {
                     closeLoaderModal();
-                    // Remove official addons and install custom addons if this was a signup
+                    // Remove specific addons and install custom addons if this was a signup
                     if (isSigningUpRef.current) {
                         isSigningUpRef.current = false;
-                        await removeOfficialAddons(core);
+                        await removeAddons(core);
                         await installDefaultAddons(core);
                     }
                     if (routeFocused) {
