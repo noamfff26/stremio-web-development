@@ -53,23 +53,6 @@ const Addons = ({ urlParams, queryParams }) => {
             }
         ];
     }, [addAddonOnSubmit]);
-    const installAllModalButtons = React.useMemo(() => {
-        return [
-            {
-                className: styles['cancel-button'],
-                label: t('BUTTON_CANCEL'),
-                props: {
-                    onClick: closeInstallAllModal
-                }
-            },
-            {
-                label: t('BUTTON_INSTALL'),
-                props: {
-                    onClick: confirmInstallAllAddons
-                }
-            }
-        ];
-    }, [confirmInstallAllAddons]);
     const [search, setSearch] = React.useState('');
     const searchInputOnChange = React.useCallback((event) => {
         setSearch(event.currentTarget.value);
@@ -125,7 +108,23 @@ const Addons = ({ urlParams, queryParams }) => {
             console.error('Error during addon setup:', error);
         }
     }, [core, cleanInstallSelected]);
-
+    const installAllModalButtons = React.useMemo(() => {
+        return [
+            {
+                className: styles['cancel-button'],
+                label: 'ביטול',
+                props: {
+                    onClick: closeInstallAllModal
+                }
+            },
+            {
+                label: 'התקן',
+                props: {
+                    onClick: confirmInstallAllAddons
+                }
+            }
+        ];
+    }, [confirmInstallAllAddons, closeInstallAllModal]);
     const onInstallAllDefaultAddons = React.useCallback(() => {
         openInstallAllModal();
     }, []);
@@ -305,10 +304,10 @@ const Addons = ({ urlParams, queryParams }) => {
                         buttons={installAllModalButtons}
                         onCloseRequest={closeInstallAllModal}>
                         <div className={styles['notice']}>
-                            {'פעולה זו תתקין את כל התוספים המוגדרים מראש. האם תרצה גם להסיר את התוספים הקיימים לפני ההתקנה?'}
+                            פעולה זו תתקין את כל התוספים המומלצים ({DEFAULT_ADDONS.length} תוספים).
                         </div>
                         <Checkbox
-                            label={'הסר תוספים קיימים (התקנה נקייה)'}
+                            label={'הסר תוספים קיימים לפני ההתקנה'}
                             checked={cleanInstallSelected}
                             onChange={toggleCleanInstall}
                         />
