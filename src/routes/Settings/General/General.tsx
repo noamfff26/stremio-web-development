@@ -8,6 +8,7 @@ import User from './User';
 import useDataExport from './useDataExport';
 import styles from './General.less';
 import useGeneralOptions from './useGeneralOptions';
+const { DEFAULT_ADDONS, ADDONS_TO_REMOVE } = require('stremio/common/addonsConfig');
 
 type Props = {
     profile: Profile,
@@ -37,6 +38,56 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
     const onExportData = useCallback(() => {
         loadDataExport();
     }, []);
+
+    const onInstallAddonsPack = useCallback(async () => {
+        toast.show({
+            type: 'info',
+            title: 'Installing IL Addons Pack...',
+            timeout: 3000
+        });
+
+        // Remove old addons
+        for (const addonUrl of ADDONS_TO_REMOVE) {
+            try {
+                const response = await fetch(addonUrl);
+                const manifest = await response.json();
+                core.transport.dispatch({
+                    action: 'Ctx',
+                    args: {
+                        action: 'UninstallAddon',
+                        args: {
+                            transportUrl: addonUrl,
+                            manifest
+                        }
+                    }
+                });
+            } catch (e) { console.error('Skip remove', addonUrl); }
+        }
+
+        // Install new addons
+        for (const addonUrl of DEFAULT_ADDONS) {
+            try {
+                const response = await fetch(addonUrl);
+                const manifest = await response.json();
+                core.transport.dispatch({
+                    action: 'Ctx',
+                    args: {
+                        action: 'InstallAddon',
+                        args: {
+                            transportUrl: addonUrl,
+                            manifest
+                        }
+                    }
+                });
+            } catch (e) { console.error('Skip install', addonUrl); }
+        }
+
+        toast.show({
+            type: 'success',
+            title: 'IL Addons Pack Installed Successfully!',
+            timeout: 5000
+        });
+    }, [core, toast]);
 
     const onCalendarSubscribe = useCallback(() => {
         if (!profile.auth) return;
@@ -102,8 +153,13 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
             }
             {
                 profile?.auth?.user &&
-                    <Link
-                        label={t('SETTINGS_SUBSCRIBE_CALENDAR')}
+                    <Link                        label={'Install IL Addons Pack'}
+                        onClick={onInstallAddonsPack}
+                    />
+            }
+            {
+                profile?.auth?.user &&
+                    <Link                        label={t('SETTINGS_SUBSCRIBE_CALENDAR')}
                         onClick={onCalendarSubscribe}
                     />
             }
