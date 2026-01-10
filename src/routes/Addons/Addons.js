@@ -6,6 +6,7 @@ const classnames = require('classnames');
 const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { usePlatform, useBinaryState, withCoreSuspender } = require('stremio/common');
+const { DEFAULT_ADDONS } = require('stremio/common/addonsConfig');
 const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu } = require('stremio/components');
 const { useServices } = require('stremio/services');
 const Addon = require('./Addon');
@@ -84,6 +85,19 @@ const Addons = ({ urlParams, queryParams }) => {
     const onAddonOpen = React.useCallback((event) => {
         setAddonDetailsTransportUrl(event.dataset.addon.transportUrl);
     }, [setAddonDetailsTransportUrl]);
+    const onInstallAllDefaultAddons = React.useCallback(() => {
+        DEFAULT_ADDONS.forEach((addonUrl) => {
+            core.transport.dispatch({
+                action: 'Ctx',
+                args: {
+                    action: 'InstallAddon',
+                    args: {
+                        transportUrl: addonUrl,
+                    }
+                }
+            });
+        });
+    }, [core.transport]);
     const closeAddonDetails = React.useCallback(() => {
         setAddonDetailsTransportUrl(null);
     }, [setAddonDetailsTransportUrl]);
@@ -114,10 +128,14 @@ const Addons = ({ urlParams, queryParams }) => {
                         />
                     ))}
                     <div className={styles['spacing']} />
-                    <Button className={styles['add-button-container']} title={t('ADD_ADDON')} onClick={openAddAddonModal}>
-                        <Icon className={styles['icon']} name={'add'} />
-                        <div className={styles['add-button-label']}>{t('ADD_ADDON')}</div>
-                    </Button>
+                     <Button className={styles['add-button-container']} title={t('ADD_ADDON')} onClick={openAddAddonModal}>
+                         <Icon className={styles['icon']} name={'add'} />
+                         <div className={styles['add-button-label']}>{t('ADD_ADDON')}</div>
+                     </Button>
+                     <Button className={styles['add-button-container']} title={'Install All Default Addons'} onClick={onInstallAllDefaultAddons}>
+                         <Icon className={styles['icon']} name={'addons'} />
+                         <div className={styles['add-button-label']}>{'Install All'}</div>
+                     </Button>
                     <SearchBar
                         className={styles['search-bar']}
                         title={t('ADDON_SEARCH')}
