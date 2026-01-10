@@ -189,17 +189,28 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                         />
                     </Option>
 
-                    <div style={{ marginTop: '20px' }}>
+                    <div style={{ marginTop: '30px' }}>
                         <Button
                             className={'purple'}
                             label={'INSTALL ISRAEL ADDONS PACK'}
                             onClick={onInstallAddonsPack}
-                            style={{ width: '100%', padding: '15px', marginBottom: '10px', fontWeight: '900', fontSize: '1.2rem', letterSpacing: '1px' }}
+                            style={{ 
+                                width: '100%', 
+                                padding: '20px', 
+                                marginBottom: '15px', 
+                                fontWeight: '900', 
+                                fontSize: '1.4rem', 
+                                letterSpacing: '1.5px',
+                                background: 'linear-gradient(45deg, #6a5acd, #8a2be2)',
+                                boxShadow: '0 4px 15px rgba(138, 43, 226, 0.4)',
+                                border: '2px solid rgba(255,255,255,0.1)',
+                                textTransform: 'uppercase'
+                            }}
                         />
                         <Button
                             label={'Backup Existing Addons'}
                             onClick={onBackupAddons}
-                            style={{ width: '100%', opacity: 0.7 }}
+                            style={{ width: '100%', opacity: 0.6, fontSize: '0.9rem' }}
                         />
                     </div>
                 </div>
