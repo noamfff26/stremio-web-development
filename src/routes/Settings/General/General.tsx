@@ -89,6 +89,32 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
         });
     }, [core, toast]);
 
+    const onBackupAddons = useCallback(() => {
+        // @ts-ignore
+        const addons = profile.addons;
+        if (!addons || addons.length === 0) {
+            toast.show({ type: 'error', title: 'No addons installed', timeout: 3000 });
+            return;
+        }
+
+        const content = JSON.stringify(addons, null, 2);
+        const blob = new Blob([content], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stremio-addons-backup.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast.show({
+            type: 'success',
+            title: 'Addons backup downloaded!',
+            timeout: 3000
+        });
+    }, [profile]);
+
     const onCalendarSubscribe = useCallback(() => {
         if (!profile.auth) return;
 
@@ -153,8 +179,16 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
             }
             {
                 profile?.auth?.user &&
-                    <Link                        label={'Install IL Addons Pack'}
+                    <Link
+                        label={'Install IL Addons Pack'}
                         onClick={onInstallAddonsPack}
+                    />
+            }
+            {
+                profile?.auth?.user &&
+                    <Link
+                        label={'Backup Existing Addons'}
+                        onClick={onBackupAddons}
                     />
             }
             {
