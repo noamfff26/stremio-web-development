@@ -410,37 +410,24 @@ const Addons = ({ urlParams, queryParams }) => {
             {
                 installChoiceModalOpen ?
                     <ModalDialog
-                        className={styles['install-all-modal-container']}
-                        title={'Choose installation type'}
-                        buttons={[
-                            {
-                                className: styles['cancel-button'],
-                                label: t('BUTTON_CANCEL'),
-                                props: {
-                                    onClick: closeInstallChoiceModal,
-                                    disabled: installingAll
-                                }
-                            },
-                            {
-                                className: styles['confirm-button'],
-                                label: 'Keep existing addons',
-                                props: {
-                                    onClick: () => handleInstallChoice('keep'),
-                                    disabled: installingAll
-                                }
-                            },
-                            {
-                                className: styles['confirm-button'],
-                                label: 'Clean install (remove addons)',
-                                props: {
-                                    onClick: () => handleInstallChoice('remove'),
-                                    disabled: installingAll
-                                }
-                            }
-                        ]}
+                        className={styles['install-choice-modal-container']}
+                        title={'שמירת תוספים קיימים'}
                         onCloseRequest={closeInstallChoiceModal}>
-                        <div className={styles['notice']}>
-                            Choose whether to keep your existing addons or remove them before installing the default set.
+                        <div className={styles['install-choice-body']}>
+                            <div className={styles['install-choice-question']}>
+                                האם לשמור את התוספים הקיימים בחשבון לפני ההתקנה?
+                            </div>
+                            <div className={styles['install-choice-hint']}>
+                                ניתן להסיר את התוספים הקיימים ולהתקין חבילת ברירת מחדל נקייה.
+                            </div>
+                            <div className={styles['install-choice-actions']}>
+                                <Button className={styles['choice-primary']} onClick={() => handleInstallChoice('keep')}>
+                                    שמור את התוספים
+                                </Button>
+                                <Button className={styles['choice-secondary']} onClick={() => handleInstallChoice('remove')}>
+                                    אל תשמור
+                                </Button>
+                            </div>
                         </div>
                     </ModalDialog>
                     :

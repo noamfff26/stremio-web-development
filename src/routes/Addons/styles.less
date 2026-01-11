@@ -390,3 +390,77 @@
         }
     }
 }
+
+.install-choice-modal-container {
+    .addon-modal-content {
+        width: 32rem;
+        padding: 2rem 2.25rem;
+        border-radius: 12px;
+        direction: rtl;
+        text-align: right;
+    }
+
+    .install-choice-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .install-choice-question {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--primary-foreground-color);
+    }
+
+    .install-choice-hint {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    .install-choice-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+    }
+
+    .choice-primary,
+    .choice-secondary {
+        flex: 1;
+        height: 3.25rem;
+        border-radius: 3.25rem;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--primary-foreground-color);
+    }
+
+    .choice-primary {
+        background-color: var(--secondary-accent-color);
+
+        &:hover {
+            background-color: transparent;
+            outline: var(--focus-outline-size) solid var(--secondary-accent-color);
+        }
+    }
+
+    .choice-secondary {
+        background-color: var(--overlay-color);
+
+        &:hover {
+            background-color: var(--overlay-color);
+            outline: var(--focus-outline-size) solid var(--primary-foreground-color);
+        }
+    }
+}
+
+@media only screen and (max-width: @minimum) {
+    .install-choice-modal-container {
+        .addon-modal-content {
+            width: auto;
+        }
+
+        .install-choice-actions {
+            flex-direction: column;
+        }
+    }
+}

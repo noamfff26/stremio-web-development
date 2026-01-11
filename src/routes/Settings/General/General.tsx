@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, ModalDialog, MultiselectMenu, Toggle } from 'stremio/components';
 import { useServices } from 'stremio/services';
@@ -37,10 +37,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
 
     const onExportData = useCallback(() => {
         loadDataExport();
-    }, []);
-
-    const [keepAddons, setKeepAddons] = useState(true);
-    const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+    }, []);    const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
     const onInstallAddonsPack = useCallback(async (shouldKeepAddons: boolean) => {
         toast.show({
@@ -102,9 +99,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
         setIsInstallModalOpen(false);
     }, []);
 
-    const onConfirmInstall = useCallback((shouldKeepAddons: boolean) => {
-        setKeepAddons(shouldKeepAddons);
-        setIsInstallModalOpen(false);
+    const onConfirmInstall = useCallback((shouldKeepAddons: boolean) => {        setIsInstallModalOpen(false);
         onInstallAddonsPack(shouldKeepAddons);
     }, [onInstallAddonsPack]);
 
@@ -190,24 +185,15 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
 
         <Section style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '18px', margin: '30px 0', padding: '24px 18px', boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)' }}>
             <h3 style={{ color: '#fff', marginBottom: '18px', fontSize: '1.3rem', fontWeight: 900, letterSpacing: '0.5px', textAlign: 'right' }}>
-                התקנת תוספים של סטרימיו ישראל
+                ׳”׳×׳§׳ ׳× ׳×׳•׳¡׳₪׳™׳ ׳©׳ ׳¡׳˜׳¨׳™׳׳™׳• ׳™׳©׳¨׳׳
             </h3>
-            <Option
-                label={'השאר תוספים רשמיים של סטרימיו'}
-                description={'אם תכבה, תוספים כמו OpenSubtitles v3 יוסרו'}
-            >
-                <Toggle
-                    checked={keepAddons}
-                    onClick={() => setKeepAddons(!keepAddons)}
-                />
-            </Option>
             <div className={styles['israel-addons-container']}>
                 <Button
                     className={'button'}
                     onClick={onOpenInstallModal}
                     disabled={!profile?.auth?.user}
                 >
-                    התקנת תוספים
+                    ׳”׳×׳§׳ ׳× ׳×׳•׳¡׳₪׳™׳
                 </Button>
                 <Button
                     className={'button'}
@@ -215,7 +201,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                     disabled={!profile?.auth?.user}
                     style={{ opacity: 0.7, fontSize: '0.9rem' }}
                 >
-                    גיבוי תוספים קיימים
+                    ׳’׳™׳‘׳•׳™ ׳×׳•׳¡׳₪׳™׳ ׳§׳™׳™׳׳™׳
                 </Button>
             </div>
         </Section>
@@ -223,17 +209,17 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
         {
             isInstallModalOpen ?
                 <ModalDialog
-                    title={'שמירת תוספים קיימים'}
+                    title={'׳©׳׳™׳¨׳× ׳×׳•׳¡׳₪׳™׳ ׳§׳™׳™׳׳™׳'}
                     onCloseRequest={onCloseInstallModal}
                     buttons={[
                         {
-                            label: 'שמור את התוספים',
+                            label: '׳©׳׳•׳¨ ׳׳× ׳”׳×׳•׳¡׳₪׳™׳',
                             props: {
                                 onClick: () => onConfirmInstall(true)
                             }
                         },
                         {
-                            label: 'אל תשמור',
+                            label: '׳׳ ׳×׳©׳׳•׳¨',
                             props: {
                                 onClick: () => onConfirmInstall(false)
                             }
@@ -241,7 +227,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                     ]}
                 >
                     <p style={{ margin: 0, textAlign: 'right' }}>
-                        האם לשמור את התוספים הקיימים בחשבון לפני ההתקנה?
+                        ׳”׳׳ ׳׳©׳׳•׳¨ ׳׳× ׳”׳×׳•׳¡׳₪׳™׳ ׳”׳§׳™׳™׳׳™׳ ׳‘׳—׳©׳‘׳•׳ ׳׳₪׳ ׳™ ׳”׳”׳×׳§׳ ׳”?
                     </p>
                 </ModalDialog>
                 :
@@ -335,3 +321,4 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
 });
 
 export default General;
+
