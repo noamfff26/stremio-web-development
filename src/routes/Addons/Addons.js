@@ -17,6 +17,9 @@ const useAddonDetailsTransportUrl = require('./useAddonDetailsTransportUrl');
 const useSelectableInputs = require('./useSelectableInputs');
 const styles = require('./styles');
 const { AddonPlaceholder } = require('./AddonPlaceholder');
+const InstallChoiceModal = require('./InstallChoiceModal');
+
+
 
 function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController();
@@ -38,6 +41,8 @@ const Addons = ({ urlParams, queryParams }) => {
     const [filtersModalOpen, openFiltersModal, closeFiltersModal] = useBinaryState(false);
     const [addAddonModalOpen, openAddAddonModal, closeAddAddonModal] = useBinaryState(false);
     const [installAllModalOpen, openInstallAllModal, closeInstallAllModal] = useBinaryState(false);
+    const [installChoiceModalOpen, openInstallChoiceModal, closeInstallChoiceModal] = useBinaryState(false);
+    const [installChoice, setInstallChoice] = React.useState('keep');
     const [cleanInstallSelected, setCleanInstallSelected] = React.useState(true);
     const addAddonUrlInputRef = React.useRef(null);
     const addAddonOnSubmit = React.useCallback(() => {
@@ -107,16 +112,9 @@ const [installingAll, setInstallingAll] = React.useState(false);
     // install choice modal removed in favor of a simple confirm prompt
     const [installChoice, setInstallChoice] = React.useState('keep');
 
-    const confirmInstallAllAddons = React.useCallback(async () => {
-        // Prompt user to choose whether to remove existing addons or keep them
-        try {
-            const removeBeforeInstall = window.confirm('הסר תוספים קיימים לפני ההתקנה?');
-            const choice = removeBeforeInstall ? 'remove' : 'keep';
-            await performInstallAllAddons(choice);
-        } catch (e) {
-            console.error(e);
-        }
-    }, [performInstallAllAddons]);
+const confirmInstallAllAddons = React.useCallback(() => {
+        openInstallChoiceModal();
+    }, [openInstallChoiceModal]);
     const performInstallAllAddons = React.useCallback(async (choice) => {
         // Perform installation with chosen option (remove or keep existing addons)
         // no modal; proceeding with install
@@ -476,5 +474,7 @@ Addons.propTypes = {
 const AddonsFallback = () => (
     <MainNavBars className={styles['addons-container']} route={'addons'} />
 );
+
+{ installChoiceModalOpen ? <InstallChoiceModal addonCount={DEFAULT_ADDONS.length} onChoose={(choice) => { performInstallAllAddons(choice); closeInstallChoiceModal(); }} onCloseRequest={closeInstallChoiceModal} /> : null }
 
 module.exports = withCoreSuspender(Addons, AddonsFallback);
