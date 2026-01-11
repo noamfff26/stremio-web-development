@@ -329,3 +329,64 @@
         }
     }
 }
+
+.install-all-modal-container {
+    .addon-modal-content {
+        width: 34rem;
+        padding: 2rem;
+        border-radius: 12px;
+
+        .notice {
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: var(--primary-foreground-color);
+        }
+
+        .notice > div:first-child {
+            font-weight: 700;
+            color: var(--primary-foreground-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .notice > div:last-child {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .stremio-checkbox {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--primary-foreground-color);
+            font-size: 0.95rem;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: row;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+
+            .button {
+                flex: 1;
+                height: 3.5rem;
+                border-radius: 3.5rem;
+                font-weight: 700;
+                font-size: 1rem;
+                color: var(--primary-foreground-color);
+                background-color: var(--overlay-color);
+            }
+
+            :global(.cancel-button) {
+                background-color: transparent;
+                opacity: 0.6;
+            }
+
+            :global(.confirm-button) {
+                background-color: var(--secondary-accent-color);
+                color: var(--primary-foreground-color);
+            }
+        }
+    }
+}
