@@ -102,18 +102,28 @@ const Addons = ({ urlParams, queryParams }) => {
         setCleanInstallSelected(prev => !prev);
     }, []);
 
-    const [installingAll, setInstallingAll] = React.useState(false);
+const [installingAll, setInstallingAll] = React.useState(false);
     const [installProgressIndex, setInstallProgressIndex] = React.useState(0);
+    // install choice modal removed in favor of a simple confirm prompt
+    const [installChoice, setInstallChoice] = React.useState('keep');
 
     const confirmInstallAllAddons = React.useCallback(async () => {
-        console.warn('[Addons] Install all button clicked');
-        console.warn('[Addons] Clean install:', cleanInstallSelected);
-
+        // Prompt user to choose whether to remove existing addons or keep them
+        try {
+            const removeBeforeInstall = window.confirm('הסר תוספים קיימים לפני ההתקנה?');
+            const choice = removeBeforeInstall ? 'remove' : 'keep';
+            await performInstallAllAddons(choice);
+        } catch (e) {
+            console.error(e);
+        }
+    }, [performInstallAllAddons]);
+    const performInstallAllAddons = React.useCallback(async (choice) => {
+        // Perform installation with chosen option (remove or keep existing addons)
+        // no modal; proceeding with install
         setInstallingAll(true);
         setInstallProgressIndex(0);
-
         try {
-            if (cleanInstallSelected) {
+            if (choice === 'remove') {
                 console.warn('[Addons] Starting addon removal...');
                 await removeAddons(core);
                 console.warn('[Addons] Addon removal complete');
@@ -133,8 +143,8 @@ const Addons = ({ urlParams, queryParams }) => {
                     console.warn('[AddonInstaller] Fetching (sequential):', addonUrl);
 
                     let response = await fetchWithTimeout(addonUrl, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000);
-                    if (!response.ok && !/manifest\.json$/.test(addonUrl)) {
-                        const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
+                    if (!response.ok && !/manifest\\.json$/.test(addonUrl)) {
+                        const urlWithManifest = addonUrl.replace(/\\/+$/, '') + '/manifest.json';
                         console.warn('[AddonInstaller] Retrying with:', urlWithManifest);
                         try { response = await fetchWithTimeout(urlWithManifest, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000); } catch(e) { console.warn('[AddonInstaller] Retry failed', e.message); }
                     }
@@ -156,38 +166,10 @@ const Addons = ({ urlParams, queryParams }) => {
                         continue;
                     }
 
-                    console.warn('[AddonInstaller] Installing (sequential):', manifest.name);
-                    
-                    // Use enhanced installation with error handling
-                    await new Promise((resolve) => {
-                        const installHandler = ({ event, args }) => {
-                            if (event === 'AddonInstalled' && args.transportUrl === addonUrl) {
-                                core.transport.off('CoreEvent', installHandler);
-                                resolve();
-                            } else if (event === 'Error' && args.source.event === 'AddonInstalled' && args.source.args.transportUrl === addonUrl) {
-                                core.transport.off('CoreEvent', installHandler);
-                                // Don't reject for code 3 errors (non-critical) or code 4 errors (already installed)
-                                if (args.error.type === 'Other' && (args.error.code === 3 || args.error.code === 4)) {
-                                    console.warn('[Addons] Non-critical error during installation, treating as success:', args.error);
-                                    resolve();
-                                } else {
-                                    console.warn('[Addons] Critical error during installation:', args.error);
-                                    resolve(); // Still resolve to continue with other addons
-                                }
-                            }
-                        };
+                    console.warn('[AddonInstaller] Installing:', manifest.name);
+                    core.transport.dispatch({ action: 'Ctx', args: { action: 'InstallAddon', args: { transportUrl: addonUrl, manifest } } });
 
-                        core.transport.on('CoreEvent', installHandler);
-
-                        core.transport.dispatch({ action: 'Ctx', args: { action: 'InstallAddon', args: { transportUrl: addonUrl, manifest } } });
-
-                        // Give it a moment to process, but always resolve on timeout
-                        setTimeout(() => {
-                            core.transport.off('CoreEvent', installHandler);
-                            resolve();
-                        }, 3000);
-                    });
-
+                    await new Promise(r => setTimeout(r, 600));
                     successCount++;
                 } catch (error) {
                     console.warn('[AddonInstaller] Error installing:', addonUrl, error.message);
@@ -198,15 +180,18 @@ const Addons = ({ urlParams, queryParams }) => {
 
             console.warn('[Addons] Sequential installation complete', { successCount, failCount });
             toast.show({ type: 'success', title: `התקנה הושלמה: ${successCount} הצלחות, ${failCount} נכשלו`, timeout: 6000 });
-} catch (error) {
-            console.error('[Addons] Unexpected error during addon setup:', error);
+        } catch (error) {
+            console.error('[Addons] Error during addon setup:', error);
+            toast.show({ type: 'error', title: 'שגיאה בהתקנת התוספים', timeout: 4000 });
         } finally {
             setInstallingAll(false);
             setInstallProgressIndex(0);
             closeInstallAllModal();
         }
-    }, [core, cleanInstallSelected, closeInstallAllModal, toast]);
+    }, [core, DEFAULT_ADDONS, removeAddons, toast]);
+
     const installAllModalButtons = React.useMemo(() => {
+
         return [
             {
                 className: styles['cancel-button'],
@@ -394,7 +379,7 @@ const Addons = ({ urlParams, queryParams }) => {
                     null
             }
             {
-                installAllModalOpen ?
+            installAllModalOpen ?
                     <ModalDialog
                         className={styles['install-all-modal-container']}
                         title={'התקן את כל התוספים'}
@@ -433,6 +418,7 @@ const Addons = ({ urlParams, queryParams }) => {
                     :
                     null
             }
+
             {
                 sharedAddon !== null ?
                     <ModalDialog
