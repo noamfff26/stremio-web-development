@@ -5,7 +5,7 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
-const { usePlatform, useBinaryState, withCoreSuspender } = require('stremio/common');
+const { usePlatform, useBinaryState, withCoreSuspender, useToast } = require('stremio/common');
 const { DEFAULT_ADDONS } = require('stremio/common/addonsConfig');
 const { removeAddons, installDefaultAddons } = require('stremio/common/addonInstaller');
 const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu, Checkbox } = require('stremio/components');
@@ -22,6 +22,7 @@ const Addons = ({ urlParams, queryParams }) => {
     const { t } = useTranslation();
     const platform = usePlatform();
     const { core } = useServices();
+    const toast = useToast();
     const installedAddons = useInstalledAddons(urlParams);
     const remoteAddons = useRemoteAddons(urlParams);
     const [addonDetailsTransportUrl, setAddonDetailsTransportUrl] = useAddonDetailsTransportUrl(urlParams, queryParams);
@@ -109,8 +110,25 @@ const Addons = ({ urlParams, queryParams }) => {
             const result = await installDefaultAddons(core);
             console.log('[Addons] Installation result:', result);
             console.log('[Addons] Default addon installation complete');
+
+            if (result && result.failCount > 0) {
+                const shortList = (result.failedUrls || []).slice(0, 3).map(u => u.replace(/^https?:\/\//, '')).join('\n');
+                toast.show({
+                    type: 'error',
+                    title: `התקנה הושלמה: ${result.successCount} הצלחות, ${result.failCount} נכשלו`,
+                    timeout: 7000,
+                    description: `בעיות ב-:\n${shortList}${(result.failedUrls && result.failedUrls.length > 3) ? '\n...' : ''}`
+                });
+            } else {
+                toast.show({
+                    type: 'success',
+                    title: `התקנה הושלמה: ${result.successCount} תוספים הותקנו`,
+                    timeout: 4000
+                });
+            }
         } catch (error) {
             console.error('[Addons] Error during addon setup:', error);
+            toast.show({ type: 'error', title: 'שגיאה בהתקנת התוספים', timeout: 4000 });
         }
     }, [core, cleanInstallSelected]);
     const installAllModalButtons = React.useMemo(() => {
@@ -123,6 +141,7 @@ const Addons = ({ urlParams, queryParams }) => {
                 }
             },
             {
+                className: styles['confirm-button'],
                 label: 'התקן',
                 props: {
                     onClick: confirmInstallAllAddons
