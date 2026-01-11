@@ -185,7 +185,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
 
         <Section style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '18px', margin: '30px 0', padding: '24px 18px', boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)' }}>
             <h3 style={{ color: '#fff', marginBottom: '18px', fontSize: '1.3rem', fontWeight: 900, letterSpacing: '0.5px', textAlign: 'right' }}>
-                ׳”׳×׳§׳ ׳× ׳×׳•׳¡׳₪׳™׳ ׳©׳ ׳¡׳˜׳¨׳™׳׳™׳• ׳™׳©׳¨׳׳
+                התקנת תוספים של סטרימיו ישראל
             </h3>
             <div className={styles['israel-addons-container']}>
                 <Button
@@ -193,7 +193,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                     onClick={onOpenInstallModal}
                     disabled={!profile?.auth?.user}
                 >
-                    ׳”׳×׳§׳ ׳× ׳×׳•׳¡׳₪׳™׳
+                    התקנת תוספים
                 </Button>
                 <Button
                     className={'button'}
@@ -201,7 +201,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                     disabled={!profile?.auth?.user}
                     style={{ opacity: 0.7, fontSize: '0.9rem' }}
                 >
-                    ׳’׳™׳‘׳•׳™ ׳×׳•׳¡׳₪׳™׳ ׳§׳™׳™׳׳™׳
+                    גיבוי תוספים קיימים
                 </Button>
             </div>
         </Section>
@@ -209,17 +209,17 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
         {
             isInstallModalOpen ?
                 <ModalDialog
-                    title={'׳©׳׳™׳¨׳× ׳×׳•׳¡׳₪׳™׳ ׳§׳™׳™׳׳™׳'}
+                    title={'שמירת תוספים קיימים'}
                     onCloseRequest={onCloseInstallModal}
                     buttons={[
                         {
-                            label: '׳©׳׳•׳¨ ׳׳× ׳”׳×׳•׳¡׳₪׳™׳',
+                            label: 'שמור את התוספים',
                             props: {
                                 onClick: () => onConfirmInstall(true)
                             }
                         },
                         {
-                            label: '׳׳ ׳×׳©׳׳•׳¨',
+                            label: 'אל תשמור',
                             props: {
                                 onClick: () => onConfirmInstall(false)
                             }
@@ -227,7 +227,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                     ]}
                 >
                     <p style={{ margin: 0, textAlign: 'right' }}>
-                        ׳”׳׳ ׳׳©׳׳•׳¨ ׳׳× ׳”׳×׳•׳¡׳₪׳™׳ ׳”׳§׳™׳™׳׳™׳ ׳‘׳—׳©׳‘׳•׳ ׳׳₪׳ ׳™ ׳”׳”׳×׳§׳ ׳”?
+                        האם לשמור את התוספים הקיימים בחשבון לפני ההתקנה?
                     </p>
                 </ModalDialog>
                 :
@@ -321,4 +321,5 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
 });
 
 export default General;
+
 
