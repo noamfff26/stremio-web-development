@@ -282,24 +282,24 @@ const Intro = ({ queryParams }) => {
                     // Remove specific addons and install custom addons if this was a signup
                     if (isSigningUpRef.current) {
                         isSigningUpRef.current = false;
-                        console.log('[Intro] User signed up, installing addons...');
+                        console.warn('[Intro] User signed up, installing addons...');
 
                         try {
                             if (state.cleanInstall) {
-                                console.log('[Intro] Starting addon removal...');
+                                console.warn('[Intro] Starting addon removal...');
                                 await removeAddons(core);
-                                console.log('[Intro] Addon removal complete');
+                                console.warn('[Intro] Addon removal complete');
                             }
-                            console.log('[Intro] Starting default addon installation...');
+                            console.warn('[Intro] Starting default addon installation...');
                             const result = await installDefaultAddons(core);
-                            console.log('[Intro] Installation result:', result);
-                            console.log('[Intro] Default addon installation complete');
+                            console.warn('[Intro] Installation result:', result);
+                            console.warn('[Intro] Default addon installation complete');
                         } catch (error) {
                             console.error('[Intro] Error during addon setup:', error);
                             // Don't block user from continuing even if addon setup fails
                         }
 
-                        console.log('[Intro] Addons setup finished, closing modal and redirecting...');
+                        console.warn('[Intro] Addons setup finished, closing modal and redirecting...');
                     }
 
                     closeLoaderModal();

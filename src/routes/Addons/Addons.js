@@ -106,20 +106,20 @@ const Addons = ({ urlParams, queryParams }) => {
     const [installProgressIndex, setInstallProgressIndex] = React.useState(0);
 
     const confirmInstallAllAddons = React.useCallback(async () => {
-        console.log('[Addons] Install all button clicked');
-        console.log('[Addons] Clean install:', cleanInstallSelected);
+        console.warn('[Addons] Install all button clicked');
+        console.warn('[Addons] Clean install:', cleanInstallSelected);
 
         setInstallingAll(true);
         setInstallProgressIndex(0);
 
         try {
             if (cleanInstallSelected) {
-                console.log('[Addons] Starting addon removal...');
+                console.warn('[Addons] Starting addon removal...');
                 await removeAddons(core);
-                console.log('[Addons] Addon removal complete');
+                console.warn('[Addons] Addon removal complete');
             }
 
-            console.log('[Addons] Starting default addon installation (sequential)...');
+            console.warn('[Addons] Starting default addon installation (sequential)...');
 
             const total = DEFAULT_ADDONS.length;
             let successCount = 0;
@@ -130,33 +130,33 @@ const Addons = ({ urlParams, queryParams }) => {
                 const addonUrl = DEFAULT_ADDONS[i];
                 setInstallProgressIndex(i + 1);
                 try {
-                    console.log('[AddonInstaller] Fetching (sequential):', addonUrl);
+                    console.warn('[AddonInstaller] Fetching (sequential):', addonUrl);
 
                     let response = await fetchWithTimeout(addonUrl, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000);
                     if (!response.ok && !/manifest\.json$/.test(addonUrl)) {
                         const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
-                        console.log('[AddonInstaller] Retrying with:', urlWithManifest);
-                        try { response = await fetchWithTimeout(urlWithManifest, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000); } catch(e) { console.log('[AddonInstaller] Retry failed', e.message); }
+                        console.warn('[AddonInstaller] Retrying with:', urlWithManifest);
+                        try { response = await fetchWithTimeout(urlWithManifest, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000); } catch(e) { console.warn('[AddonInstaller] Retry failed', e.message); }
                     }
 
                     if (!response || !response.ok) {
-                        console.log('[AddonInstaller] Failed to fetch after retry:', addonUrl, response && response.status);
+                        console.warn('[AddonInstaller] Failed to fetch after retry:', addonUrl, response && response.status);
                         failCount++;
                         failedUrls.push(addonUrl);
                         continue;
                     }
 
                     let manifest;
-                    try { manifest = await response.json(); } catch (err) { console.log('[AddonInstaller] JSON parse error:', addonUrl, err.message); failCount++; failedUrls.push(addonUrl); continue; }
+                    try { manifest = await response.json(); } catch (err) { console.warn('[AddonInstaller] JSON parse error:', addonUrl, err.message); failCount++; failedUrls.push(addonUrl); continue; }
 
                     if (!manifest || !manifest.id || !manifest.name) {
-                        console.log('[AddonInstaller] Invalid manifest:', addonUrl);
+                        console.warn('[AddonInstaller] Invalid manifest:', addonUrl);
                         failCount++;
                         failedUrls.push(addonUrl);
                         continue;
                     }
 
-                    console.log('[AddonInstaller] Installing (sequential):', manifest.name);
+                    console.warn('[AddonInstaller] Installing (sequential):', manifest.name);
                     
                     // Use enhanced installation with error handling
                     await new Promise((resolve) => {
@@ -168,10 +168,10 @@ const Addons = ({ urlParams, queryParams }) => {
                                 core.transport.off('CoreEvent', installHandler);
                                 // Don't reject for code 3 errors (non-critical) or code 4 errors (already installed)
                                 if (args.error.type === 'Other' && (args.error.code === 3 || args.error.code === 4)) {
-                                    console.log('[Addons] Non-critical error during installation, treating as success:', args.error);
+                                    console.warn('[Addons] Non-critical error during installation, treating as success:', args.error);
                                     resolve();
                                 } else {
-                                    console.log('[Addons] Critical error during installation:', args.error);
+                                    console.warn('[Addons] Critical error during installation:', args.error);
                                     resolve(); // Still resolve to continue with other addons
                                 }
                             }
@@ -190,13 +190,13 @@ const Addons = ({ urlParams, queryParams }) => {
 
                     successCount++;
                 } catch (error) {
-                    console.log('[AddonInstaller] Error installing:', addonUrl, error.message);
+                    console.warn('[AddonInstaller] Error installing:', addonUrl, error.message);
                     failCount++;
                     failedUrls.push(addonUrl);
                 }
             }
 
-            console.log('[Addons] Sequential installation complete', { successCount, failCount });
+            console.warn('[Addons] Sequential installation complete', { successCount, failCount });
             toast.show({ type: 'success', title: `התקנה הושלמה: ${successCount} הצלחות, ${failCount} נכשלו`, timeout: 6000 });
 } catch (error) {
             console.error('[Addons] Unexpected error during addon setup:', error);

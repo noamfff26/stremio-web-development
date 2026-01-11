@@ -21,7 +21,7 @@ const removeAddons = async (core) => {
             }, 5000);
 
             if (!response.ok) {
-                console.log('Failed to fetch addon manifest:', addonUrl, response.status);
+                console.warn('Failed to fetch addon manifest:', addonUrl, response.status);
                 return;
             }
 
@@ -36,9 +36,9 @@ const removeAddons = async (core) => {
                     }
                 }
             });
-            console.log('Removed addon:', addonUrl);
+            console.warn('Removed addon:', addonUrl);
         } catch (error) {
-            console.log('Skipping addon (may be protected or not installed):', addonUrl, error.message);
+            console.warn('Skipping addon (may be protected or not installed):', addonUrl, error.message);
         }
     });
 
@@ -52,12 +52,12 @@ const installDefaultAddons = async (core) => {
     let failCount = 0;
     const failedUrls = [];
 
-    console.log('[AddonInstaller] Starting installation of', DEFAULT_ADDONS.length, 'addons');
+    console.warn('[AddonInstaller] Starting installation of', DEFAULT_ADDONS.length, 'addons');
 
     // Process addons sequentially to avoid overwhelming the system
     for (const addonUrl of DEFAULT_ADDONS) {
         try {
-            console.log('[AddonInstaller] Fetching:', addonUrl);
+            console.warn('[AddonInstaller] Fetching:', addonUrl);
 
             // Try fetching the URL as provided first
             let response = await fetchWithTimeout(addonUrl, {
@@ -70,23 +70,23 @@ const installDefaultAddons = async (core) => {
             // If initial fetch failed and addonUrl does not already end with manifest.json,
             // try appending '/manifest.json' as a fallback.
             if (!response.ok) {
-                console.log('[AddonInstaller] Initial fetch failed:', addonUrl, response.status);
+                console.warn('[AddonInstaller] Initial fetch failed:', addonUrl, response.status);
                 if (!/manifest\.json$/.test(addonUrl)) {
                     const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
-                    console.log('[AddonInstaller] Retrying with:', urlWithManifest);
+                    console.warn('[AddonInstaller] Retrying with:', urlWithManifest);
                     try {
 response = await fetchWithTimeout(urlWithManifest, {
                             method: 'GET',
                             headers: { 'Accept': 'application/json' }
                         }, 10000);
                     } catch (e) {
-                        console.log('[AddonInstaller] Retry fetch error:', urlWithManifest, e.message);
+                        console.warn('[AddonInstaller] Retry fetch error:', urlWithManifest, e.message);
                     }
                 }
             }
 
             if (!response || !response.ok) {
-                console.log('[AddonInstaller] Failed to fetch after retry:', addonUrl, response && response.status);
+                console.warn('[AddonInstaller] Failed to fetch after retry:', addonUrl, response && response.status);
                 failCount++;
                 failedUrls.push(addonUrl);
                 continue;
@@ -96,20 +96,20 @@ response = await fetchWithTimeout(urlWithManifest, {
             try {
                 manifest = await response.json();
             } catch (err) {
-                console.log('[AddonInstaller] Failed to parse manifest JSON:', addonUrl, err.message);
+                console.warn('[AddonInstaller] Failed to parse manifest JSON:', addonUrl, err.message);
                 failCount++;
                 failedUrls.push(addonUrl);
                 continue;
             }
 
             if (!manifest || !manifest.id || !manifest.name) {
-                console.log('[AddonInstaller] Invalid manifest:', addonUrl);
+                console.warn('[AddonInstaller] Invalid manifest:', addonUrl);
                 failCount++;
                 failedUrls.push(addonUrl);
                 continue;
             }
 
-            console.log('[AddonInstaller] Installing:', manifest.name);
+            console.warn('[AddonInstaller] Installing:', manifest.name);
 
             // Use a Promise to handle the installation with error handling
             await new Promise((resolve, reject) => {
@@ -121,7 +121,7 @@ response = await fetchWithTimeout(urlWithManifest, {
                         core.transport.off('CoreEvent', installHandler);
                         // Don't reject for code 3 errors (non-critical)
                         if (args.error.type === 'Other' && args.error.code === 3) {
-                            console.log('[AddonInstaller] Non-critical error during installation, treating as success:', args.error);
+                            console.warn('[AddonInstaller] Non-critical error during installation, treating as success:', args.error);
                             resolve();
                         } else {
                             reject(new Error(`Installation failed: ${args.error.message || 'Unknown error'}`));
@@ -149,16 +149,16 @@ response = await fetchWithTimeout(urlWithManifest, {
                 }, 3000);
             });
 
-            console.log('[AddonInstaller] Successfully installed:', manifest.name);
+            console.warn('[AddonInstaller] Successfully installed:', manifest.name);
             successCount++;
         } catch (error) {
-            console.log('[AddonInstaller] Error installing:', addonUrl, error.message);
+            console.warn('[AddonInstaller] Error installing:', addonUrl, error.message);
             failCount++;
             failedUrls.push(addonUrl);
         }
     }
 
-    console.log(`[AddonInstaller] Complete: ${successCount} installed, ${failCount} failed`);
+    console.warn(`[AddonInstaller] Complete: ${successCount} installed, ${failCount} failed`);
     return { successCount, failCount, failedUrls };
 };
 
