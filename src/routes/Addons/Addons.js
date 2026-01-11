@@ -7,7 +7,7 @@ const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { usePlatform, useBinaryState, withCoreSuspender, useToast } = require('stremio/common');
 const { DEFAULT_ADDONS } = require('stremio/common/addonsConfig');
-const { removeAddons, installDefaultAddons } = require('stremio/common/addonInstaller');
+const { removeAddons } = require('stremio/common/addonInstaller');
 const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu, Checkbox } = require('stremio/components');
 const { useServices } = require('stremio/services');
 const Addon = require('./Addon');
@@ -17,7 +17,6 @@ const useAddonDetailsTransportUrl = require('./useAddonDetailsTransportUrl');
 const useSelectableInputs = require('./useSelectableInputs');
 const styles = require('./styles');
 const { AddonPlaceholder } = require('./AddonPlaceholder');
-const InstallChoiceModal = require('./InstallChoiceModal');
 
 
 
@@ -41,8 +40,6 @@ const Addons = ({ urlParams, queryParams }) => {
     const [filtersModalOpen, openFiltersModal, closeFiltersModal] = useBinaryState(false);
     const [addAddonModalOpen, openAddAddonModal, closeAddAddonModal] = useBinaryState(false);
     const [installAllModalOpen, openInstallAllModal, closeInstallAllModal] = useBinaryState(false);
-    const [installChoiceModalOpen, openInstallChoiceModal, closeInstallChoiceModal] = useBinaryState(false);
-    const [installChoice, setInstallChoice] = React.useState('keep');
     const [cleanInstallSelected, setCleanInstallSelected] = React.useState(true);
     const addAddonUrlInputRef = React.useRef(null);
     const addAddonOnSubmit = React.useCallback(() => {
@@ -107,14 +104,8 @@ const Addons = ({ urlParams, queryParams }) => {
         setCleanInstallSelected(prev => !prev);
     }, []);
 
-const [installingAll, setInstallingAll] = React.useState(false);
+    const [installingAll, setInstallingAll] = React.useState(false);
     const [installProgressIndex, setInstallProgressIndex] = React.useState(0);
-    // install choice modal removed in favor of a simple confirm prompt
-    const [installChoice, setInstallChoice] = React.useState('keep');
-
-const confirmInstallAllAddons = React.useCallback(() => {
-        openInstallChoiceModal();
-    }, [openInstallChoiceModal]);
     const performInstallAllAddons = React.useCallback(async (choice) => {
         // Perform installation with chosen option (remove or keep existing addons)
         // no modal; proceeding with install
@@ -186,7 +177,12 @@ const confirmInstallAllAddons = React.useCallback(() => {
             setInstallProgressIndex(0);
             closeInstallAllModal();
         }
-    }, [core, DEFAULT_ADDONS, removeAddons, toast]);
+    }, [core, removeAddons, toast]);
+
+    const confirmInstallAllAddons = React.useCallback(() => {
+        const choice = cleanInstallSelected ? 'remove' : 'keep';
+        performInstallAllAddons(choice);
+    }, [cleanInstallSelected, performInstallAllAddons]);
 
     const installAllModalButtons = React.useMemo(() => {
 
@@ -474,7 +470,5 @@ Addons.propTypes = {
 const AddonsFallback = () => (
     <MainNavBars className={styles['addons-container']} route={'addons'} />
 );
-
-{ installChoiceModalOpen ? <InstallChoiceModal addonCount={DEFAULT_ADDONS.length} onChoose={(choice) => { performInstallAllAddons(choice); closeInstallChoiceModal(); }} onCloseRequest={closeInstallChoiceModal} /> : null }
 
 module.exports = withCoreSuspender(Addons, AddonsFallback);
