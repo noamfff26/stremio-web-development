@@ -170,7 +170,7 @@ const Addons = ({ urlParams, queryParams }) => {
             }
 
             console.log('[Addons] Sequential installation complete', { successCount, failCount });
-            toast.show({ type: failCount > 0 ? 'error' : 'success', title: `התקנה הושלמה: ${successCount} הצלחות, ${failCount} נכשלו`, timeout: 6000 });
+            toast.show({ type: 'success', title: `התקנה הושלמה: ${successCount} הצלחות, ${failCount} נכשלו`, timeout: 6000 });
 } catch (error) {
             console.error('[Addons] Unexpected error during addon setup:', error);
         } finally {
