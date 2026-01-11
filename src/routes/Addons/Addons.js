@@ -7,7 +7,6 @@ const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { usePlatform, useBinaryState, withCoreSuspender, useToast } = require('stremio/common');
 const { DEFAULT_ADDONS } = require('stremio/common/addonsConfig');
-const { removeAddons } = require('stremio/common/addonInstaller');
 const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu } = require('stremio/components');
 const { useServices } = require('stremio/services');
 const Addon = require('./Addon');
@@ -109,9 +108,26 @@ const Addons = ({ urlParams, queryParams }) => {
         setInstallProgressIndex(0);
         try {
             if (choice === 'remove') {
-                console.warn('[Addons] Starting addon removal...');
-                await removeAddons(core);
-                console.warn('[Addons] Addon removal complete');
+                console.warn('[Addons] Starting removal of all existing addons...');
+                // Remove all installed addons for a clean install
+                for (const addon of installedAddons.catalog) {
+                    try {
+                        core.transport.dispatch({
+                            action: 'Ctx',
+                            args: {
+                                action: 'UninstallAddon',
+                                args: {
+                                    transportUrl: addon.transportUrl,
+                                    manifest: addon.manifest
+                                }
+                            }
+                        });
+                        console.warn('[Addons] Removed addon:', addon.manifest.name);
+                    } catch (error) {
+                        console.warn('[Addons] Failed to remove addon:', addon.manifest.name, error.message);
+                    }
+                }
+                console.warn('[Addons] Removal of all existing addons complete');
             }
 
             console.warn('[Addons] Starting default addon installation (sequential)...');
@@ -173,7 +189,7 @@ const Addons = ({ urlParams, queryParams }) => {
             setInstallProgressIndex(0);
             closeInstallAllModal();
         }
-    }, [core, removeAddons, toast]);
+    }, [core, installedAddons.catalog, toast]);
 
     const confirmInstallAllAddons = React.useCallback(() => {
         openInstallChoiceModal();
