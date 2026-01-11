@@ -201,9 +201,10 @@ const mapErrorToCode = (error) => {
         return ERROR_CODES.CONNECTION_TIMEOUT;
     }
 
-    // Handle addon errors
-    if (error.type === 'Other' && error.code === 3) {
-        return ERROR_CODES.ADDON_INSTALL_FAILED;
+    // Handle addon errors - filter out non-critical errors (code 3 and 4)
+    if (error.type === 'Other' && (error.code === 3 || error.code === 4)) {
+        // Return null for non-critical addon errors to prevent display
+        return null;
     }
 
     // Handle streaming errors

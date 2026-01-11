@@ -18,6 +18,12 @@ class ErrorHandler {
     handle(error, context = {}) {
         try {
             const errorInfo = mapErrorToCode(error);
+            
+            // If errorInfo is null (non-critical addon error), don't process it
+            if (errorInfo === null) {
+                return null;
+            }
+            
             const errorEntry = {
                 ...errorInfo,
                 context,
