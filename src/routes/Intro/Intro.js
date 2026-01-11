@@ -13,7 +13,7 @@ const CredentialsTextInput = require('./CredentialsTextInput');
 const PasswordResetModal = require('./PasswordResetModal');
 const useFacebookLogin = require('./useFacebookLogin');
 const { default: useAppleLogin } = require('./useAppleLogin');
-const { removeAddons, installDefaultAddons } = require('stremio/common/addonInstaller');
+const { installDefaultAddons } = require('stremio/common/addonInstaller');
 
 const styles = require('./styles');
 
@@ -36,7 +36,6 @@ const Intro = ({ queryParams }) => {
     const isSigningUpRef = React.useRef(false);
     const [passwordRestModalOpen, openPasswordRestModal, closePasswordResetModal] = useBinaryState(false);
     const [loaderModalOpen, openLoaderModal, closeLoaderModal] = useBinaryState(false);
-    const [addonChoiceModalOpen, openAddonChoiceModal, closeAddonChoiceModal] = useBinaryState(false);
     const [state, dispatch] = React.useReducer(
         (state, action) => {
             switch (action.type) {
@@ -50,7 +49,6 @@ const Intro = ({ queryParams }) => {
                             termsAccepted: false,
                             privacyPolicyAccepted: false,
                             marketingAccepted: false,
-                            cleanInstall: true,
                             error: ''
                         };
                     }
@@ -84,7 +82,6 @@ const Intro = ({ queryParams }) => {
             termsAccepted: false,
             privacyPolicyAccepted: false,
             marketingAccepted: false,
-            cleanInstall: true,
             error: ''
         }
     );
@@ -254,26 +251,6 @@ const Intro = ({ queryParams }) => {
     const toggleMarketingAccepted = React.useCallback(() => {
         dispatch({ type: 'toggle-checkbox', name: 'marketingAccepted' });
     }, []);
-    const toggleCleanInstall = React.useCallback(() => {
-        dispatch({ type: 'toggle-checkbox', name: 'cleanInstall' });
-    }, []);
-    const handleAddonChoice = React.useCallback(async (choice) => {
-        closeAddonChoiceModal();
-        openLoaderModal();
-        try {
-            if (choice === 'remove') {
-                await removeAddons(core);
-            }
-            await installDefaultAddons(core);
-        } catch (error) {
-            console.error('[Intro] Error during addon setup:', error);
-        } finally {
-            closeLoaderModal();
-            if (routeFocused) {
-                window.location = '#/';
-            }
-        }
-    }, [closeAddonChoiceModal, closeLoaderModal, core, openLoaderModal, routeFocused]);
     const switchFormOnClick = React.useCallback(() => {
         const queryParams = new URLSearchParams([['form', state.form === SIGNUP_FORM ? LOGIN_FORM : SIGNUP_FORM]]);
         window.location = `#/intro?${queryParams.toString()}`;
@@ -297,11 +274,21 @@ const Intro = ({ queryParams }) => {
         const onCoreEvent = async ({ event, args }) => {
             switch (event) {
                 case 'UserAuthenticated': {
-                    // Remove specific addons and install custom addons if this was a signup
+                    // Install default addons automatically for new signups
                     if (isSigningUpRef.current) {
                         isSigningUpRef.current = false;
-                        closeLoaderModal();
-                        openAddonChoiceModal();
+                        (async () => {
+                            try {
+                                await installDefaultAddons(core);
+                            } catch (error) {
+                                console.error('[Intro] Error installing default addons:', error);
+                            } finally {
+                                closeLoaderModal();
+                                if (routeFocused) {
+                                    window.location = '#/';
+                                }
+                            }
+                        })();
                         return;
                     }
 
@@ -315,7 +302,6 @@ const Intro = ({ queryParams }) => {
                 case 'Error': {
                     if (args.source.event === 'UserAuthenticated') {
                         closeLoaderModal();
-                        closeAddonChoiceModal();
                         isSigningUpRef.current = false;
                     }
 
@@ -396,11 +382,6 @@ const Intro = ({ queryParams }) => {
                                     checked={state.marketingAccepted}
                                     onChange={toggleMarketingAccepted}
                                 />
-                                <Checkbox
-                                    label={t('CLEAN_INSTALL_ADDONS')}
-                                    checked={state.cleanInstall}
-                                    onChange={toggleCleanInstall}
-                                />
                             </React.Fragment>
                             :
                             <div className={styles['forgot-password-link-container']}>
@@ -455,25 +436,6 @@ const Intro = ({ queryParams }) => {
             {
                 passwordRestModalOpen ?
                     <PasswordResetModal email={state.email} onCloseRequest={closePasswordResetModal} />
-                    :
-                    null
-            }
-            {
-                addonChoiceModalOpen ?
-                    <Modal className={styles['loading-modal-container']}>
-                        <div className={styles['loader-container']}>
-                            <div className={styles['label']}>Choose how to install addons</div>
-                            <div className={styles['notice']}>Keep existing addons or remove them before installing the default set.</div>
-                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                <Button className={styles['button']} onClick={() => handleAddonChoice('keep')}>
-                                    Keep addons
-                                </Button>
-                                <Button className={styles['button']} onClick={() => handleAddonChoice('remove')}>
-                                    Clean install
-                                </Button>
-                            </div>
-                        </div>
-                    </Modal>
                     :
                     null
             }
