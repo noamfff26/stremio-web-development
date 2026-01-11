@@ -1,332 +1,480 @@
-﻿import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Button, ModalDialog, MultiselectMenu, Toggle } from 'stremio/components';
-import { useServices } from 'stremio/services';
-import { usePlatform, useToast } from 'stremio/common';
-import { Section, Option, Link } from '../components';
-import User from './User';
-import useDataExport from './useDataExport';
-import styles from './General.less';
-import useGeneralOptions from './useGeneralOptions';
-const { DEFAULT_ADDONS, ADDONS_TO_REMOVE } = require('stremio/common/addonsConfig');
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Button,
+  ModalDialog,
+  MultiselectMenu,
+  Toggle,
+} from "stremio/components";
+import { useServices } from "stremio/services";
+import { usePlatform, useToast } from "stremio/common";
+import { Section, Option, Link } from "../components";
+import User from "./User";
+import useDataExport from "./useDataExport";
+import styles from "./General.less";
+import useGeneralOptions from "./useGeneralOptions";
+const {
+  DEFAULT_ADDONS,
+  ADDONS_TO_REMOVE,
+} = require("stremio/common/addonsConfig");
+
+function fetchWithTimeout(url: string, options: any, timeoutMs: number) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const finalOptions = Object.assign({}, options || {}, {
+    signal: controller.signal,
+  });
+  return fetch(url, finalOptions).finally(() => clearTimeout(timer));
+}
 
 type Props = {
-    profile: Profile,
+  profile: Profile;
 };
 
 const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
-    const { t } = useTranslation();
-    const { core, shell } = useServices();
-    const platform = usePlatform();
-    const toast = useToast();
-    const [dataExport, loadDataExport] = useDataExport();
+  const { t } = useTranslation();
+  const { core, shell } = useServices();
+  const platform = usePlatform();
+  const toast = useToast();
+  const [dataExport, loadDataExport] = useDataExport();
 
-    const {
-        interfaceLanguageSelect,
-        quitOnCloseToggle,
-        escExitFullscreenToggle,
-        hideSpoilersToggle,
-    } = useGeneralOptions(profile);
+  const {
+    interfaceLanguageSelect,
+    quitOnCloseToggle,
+    escExitFullscreenToggle,
+    hideSpoilersToggle,
+  } = useGeneralOptions(profile);
 
-    const [traktAuthStarted, setTraktAuthStarted] = useState(false);
+  const [traktAuthStarted, setTraktAuthStarted] = useState(false);
 
-    const isTraktAuthenticated = useMemo(() => {
-        const trakt = profile?.auth?.user?.trakt;
-        return trakt && (Date.now() / 1000) < (trakt.created_at + trakt.expires_in);
-    }, [profile.auth]);
+  const isTraktAuthenticated = useMemo(() => {
+    const trakt = profile?.auth?.user?.trakt;
+    return trakt && Date.now() / 1000 < trakt.created_at + trakt.expires_in;
+  }, [profile.auth]);
 
-    const onExportData = useCallback(() => {
-        loadDataExport();
-    }, []);    const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const onExportData = useCallback(() => {
+    loadDataExport();
+  }, []);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
-    const onInstallAddonsPack = useCallback(async (shouldKeepAddons: boolean) => {
+  const onInstallAddonsPack = useCallback(
+    async (shouldKeepAddons: boolean) => {
+      try {
         toast.show({
-            type: 'info',
-            title: 'Installing IL Addons Pack...',
-            timeout: 3000
+          type: "info",
+          title: "מתקין תוספים...",
+          timeout: 3000,
         });
+
+        let successCount = 0;
+        let failCount = 0;
 
         // Remove old addons only if user chose NOT to keep them
         if (!shouldKeepAddons) {
-            for (const addonUrl of ADDONS_TO_REMOVE) {
+          console.warn("[Settings] Removing old addons...");
+          for (const addonUrl of ADDONS_TO_REMOVE) {
+            try {
+              let response = await fetchWithTimeout(
+                addonUrl,
+                {
+                  method: "GET",
+                  headers: { Accept: "application/json" },
+                },
+                5000,
+              );
+
+              if (!response.ok && !/manifest\.json$/.test(addonUrl)) {
+                const urlWithManifest =
+                  addonUrl.replace(/\/+$/, "") + "/manifest.json";
                 try {
-                    const response = await fetch(addonUrl);
-                    const manifest = await response.json();
-                    core.transport.dispatch({
-                        action: 'Ctx',
-                        args: {
-                            action: 'UninstallAddon',
-                            args: {
-                                transportUrl: addonUrl,
-                                manifest
-                            }
-                        }
-                    });
-                } catch (e) { console.error('Skip remove', addonUrl); }
+                  response = await fetchWithTimeout(
+                    urlWithManifest,
+                    {
+                      method: "GET",
+                      headers: { Accept: "application/json" },
+                    },
+                    5000,
+                  );
+                } catch (err) {
+                  console.warn("[Settings] Retry failed", err);
+                }
+              }
+
+              if (response && response.ok) {
+                const manifest = await response.json();
+                core.transport.dispatch({
+                  action: "Ctx",
+                  args: {
+                    action: "UninstallAddon",
+                    args: {
+                      transportUrl: addonUrl,
+                      manifest,
+                    },
+                  },
+                });
+                console.warn("[Settings] Removed addon:", addonUrl);
+              }
+            } catch (e) {
+              console.error("[Settings] Skip remove", addonUrl, e);
             }
+          }
+          await new Promise((r) => setTimeout(r, 1000));
         }
 
         // Install new addons
+        console.warn("[Settings] Installing new addons...");
         for (const addonUrl of DEFAULT_ADDONS) {
-            try {
-                const response = await fetch(addonUrl);
-                const manifest = await response.json();
+          try {
+            let response = await fetchWithTimeout(
+              addonUrl,
+              {
+                method: "GET",
+                headers: { Accept: "application/json" },
+              },
+              10000,
+            );
+
+            if (!response.ok && !/manifest\.json$/.test(addonUrl)) {
+              const urlWithManifest =
+                addonUrl.replace(/\/+$/, "") + "/manifest.json";
+              console.warn("[Settings] Retrying with:", urlWithManifest);
+              try {
+                response = await fetchWithTimeout(
+                  urlWithManifest,
+                  {
+                    method: "GET",
+                    headers: { Accept: "application/json" },
+                  },
+                  10000,
+                );
+              } catch (err) {
+                console.warn("[Settings] Retry failed", err);
+              }
+            }
+
+            if (response && response.ok) {
+              const manifest = await response.json();
+              if (manifest && manifest.id && manifest.name) {
                 core.transport.dispatch({
-                    action: 'Ctx',
+                  action: "Ctx",
+                  args: {
+                    action: "InstallAddon",
                     args: {
-                        action: 'InstallAddon',
-                        args: {
-                            transportUrl: addonUrl,
-                            manifest
-                        }
-                    }
+                      transportUrl: addonUrl,
+                      manifest,
+                    },
+                  },
                 });
-            } catch (e) { console.error('Skip install', addonUrl); }
+                console.warn("[Settings] Installed addon:", manifest.name);
+                successCount++;
+                await new Promise((r) => setTimeout(r, 600));
+              } else {
+                console.warn("[Settings] Invalid manifest:", addonUrl);
+                failCount++;
+              }
+            } else {
+              console.warn("[Settings] Failed to fetch:", addonUrl);
+              failCount++;
+            }
+          } catch (e) {
+            console.error("[Settings] Skip install", addonUrl, e);
+            failCount++;
+          }
         }
 
-        toast.show({
-            type: 'success',
-            title: 'IL Addons Pack Installed Successfully!',
-            timeout: 5000
+        console.warn("[Settings] Installation complete:", {
+          successCount,
+          failCount,
         });
-    }, [core, toast]);
-
-    const onOpenInstallModal = useCallback(() => {
-        setIsInstallModalOpen(true);
-    }, []);
-
-    const onCloseInstallModal = useCallback(() => {
-        setIsInstallModalOpen(false);
-    }, []);
-
-    const onConfirmInstall = useCallback((shouldKeepAddons: boolean) => {        setIsInstallModalOpen(false);
-        onInstallAddonsPack(shouldKeepAddons);
-    }, [onInstallAddonsPack]);
-
-    const onBackupAddons = useCallback(() => {
-        // @ts-ignore
-        const addons = profile.addons;
-        if (!addons || addons.length === 0) {
-            toast.show({ type: 'error', title: 'No addons installed', timeout: 3000 });
-            return;
-        }
-
-        const content = JSON.stringify(addons, null, 2);
-        const blob = new Blob([content], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'stremio-addons-backup.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
         toast.show({
-            type: 'success',
-            title: 'Addons backup downloaded!',
-            timeout: 3000
+          type: "success",
+          title: `התקנה הושלמה: ${successCount} תוספים הותקנו${failCount > 0 ? `, ${failCount} נכשלו` : ""}`,
+          timeout: 6000,
         });
-    }, [profile]);
-
-    const onCalendarSubscribe = useCallback(() => {
-        if (!profile.auth) return;
-
-        const protocol = platform.name === 'ios' ? 'webcal' : 'https';
-        const url = `${protocol}://www.strem.io/calendar/${profile.auth.user._id}.ics`;
-        platform.openExternal(url);
-
+      } catch (error) {
+        console.error("[Settings] Error during installation:", error);
         toast.show({
-            type: 'success',
-            title: platform.name === 'ios' ?
-                t('SETTINGS_SUBSCRIBE_CALENDAR_IOS_TOAST') :
-                t('SETTINGS_SUBSCRIBE_CALENDAR_TOAST'),
-            timeout: 25000
+          type: "error",
+          title: "שגיאה בהתקנת התוספים",
+          timeout: 4000,
         });
-        // Stremio 4 emits not documented event subscribeCalendar
-    }, [profile.auth]);
+      }
+    },
+    [core, toast],
+  );
 
-    const onToggleTrakt = useCallback(() => {
-        if (!isTraktAuthenticated && profile.auth !== null && profile.auth.user !== null && typeof profile.auth.user._id === 'string') {
-            platform.openExternal(`https://www.strem.io/trakt/auth/${profile.auth.user._id}`);
-            setTraktAuthStarted(true);
-        } else {
-            core.transport.dispatch({
-                action: 'Ctx',
-                args: {
-                    action: 'LogoutTrakt'
-                }
-            });
-        }
-    }, [isTraktAuthenticated, profile.auth]);
+  const onOpenInstallModal = useCallback(() => {
+    setIsInstallModalOpen(true);
+  }, []);
 
-    useEffect(() => {
-        if (dataExport.exportUrl) {
-            platform.openExternal(dataExport.exportUrl);
-        }
-    }, [dataExport.exportUrl]);
+  const onCloseInstallModal = useCallback(() => {
+    setIsInstallModalOpen(false);
+  }, []);
 
-    useEffect(() => {
-        if (isTraktAuthenticated && traktAuthStarted) {
-            core.transport.dispatch({
-                action: 'Ctx',
-                args: {
-                    action: 'InstallTraktAddon'
-                }
-            });
-            setTraktAuthStarted(false);
-        }
-    }, [isTraktAuthenticated, traktAuthStarted]);
+  const onConfirmInstall = useCallback(
+    (shouldKeepAddons: boolean) => {
+      setIsInstallModalOpen(false);
+      onInstallAddonsPack(shouldKeepAddons);
+    },
+    [onInstallAddonsPack],
+  );
 
-    return <>
-        <Section ref={ref}>
-            <User profile={profile} />
-        </Section>
+  const onBackupAddons = useCallback(() => {
+    // @ts-ignore
+    const addons = profile.addons;
+    if (!addons || addons.length === 0) {
+      toast.show({
+        type: "error",
+        title: "No addons installed",
+        timeout: 3000,
+      });
+      return;
+    }
 
-        <Section style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '18px', margin: '30px 0', padding: '24px 18px', boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)' }}>
-            <h3 style={{ color: '#fff', marginBottom: '18px', fontSize: '1.3rem', fontWeight: 900, letterSpacing: '0.5px', textAlign: 'right' }}>
-                התקנת תוספים של סטרימיו ישראל
-            </h3>
-            <div className={styles['israel-addons-container']}>
-                <Button
-                    className={'button'}
-                    onClick={onOpenInstallModal}
-                    disabled={!profile?.auth?.user}
-                >
-                    התקנת תוספים
-                </Button>
-                <Button
-                    className={'button'}
-                    onClick={onBackupAddons}
-                    disabled={!profile?.auth?.user}
-                    style={{ opacity: 0.7, fontSize: '0.9rem' }}
-                >
-                    גיבוי תוספים קיימים
-                </Button>
-            </div>
-        </Section>
+    const content = JSON.stringify(addons, null, 2);
+    const blob = new Blob([content], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "stremio-addons-backup.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-        {
-            isInstallModalOpen ?
-                <ModalDialog
-                    className={styles['israel-addons-modal']}
-                    title={'שמירת תוספים קיימים'}
-                    onCloseRequest={onCloseInstallModal}
-                    buttons={[
-                        {
-                            className: styles['modal-primary'],
-                            label: 'שמור את התוספים',
-                            props: {
-                                onClick: () => onConfirmInstall(true)
-                            }
-                        },
-                        {
-                            className: styles['modal-secondary'],
-                            label: 'אל תשמור',
-                            props: {
-                                onClick: () => onConfirmInstall(false)
-                            }
-                        }
-                    ]}
-                >
-                    <p className={styles['israel-addons-modal-text']}>
-                        האם לשמור את התוספים הקיימים בחשבון לפני ההתקנה?
-                    </p>
-                    <p className={styles['israel-addons-modal-hint']}>
-                        אם בוחרים לא לשמור, התוספים הקיימים יוסרו לפני ההתקנה.
-                    </p>
-                </ModalDialog>
-                :
-                null
-        }
+    toast.show({
+      type: "success",
+      title: "Addons backup downloaded!",
+      timeout: 3000,
+    });
+  }, [profile]);
 
-        <Section>
+  const onCalendarSubscribe = useCallback(() => {
+    if (!profile.auth) return;
+
+    const protocol = platform.name === "ios" ? "webcal" : "https";
+    const url = `${protocol}://www.strem.io/calendar/${profile.auth.user._id}.ics`;
+    platform.openExternal(url);
+
+    toast.show({
+      type: "success",
+      title:
+        platform.name === "ios"
+          ? t("SETTINGS_SUBSCRIBE_CALENDAR_IOS_TOAST")
+          : t("SETTINGS_SUBSCRIBE_CALENDAR_TOAST"),
+      timeout: 25000,
+    });
+    // Stremio 4 emits not documented event subscribeCalendar
+  }, [profile.auth]);
+
+  const onToggleTrakt = useCallback(() => {
+    if (
+      !isTraktAuthenticated &&
+      profile.auth !== null &&
+      profile.auth.user !== null &&
+      typeof profile.auth.user._id === "string"
+    ) {
+      platform.openExternal(
+        `https://www.strem.io/trakt/auth/${profile.auth.user._id}`,
+      );
+      setTraktAuthStarted(true);
+    } else {
+      core.transport.dispatch({
+        action: "Ctx",
+        args: {
+          action: "LogoutTrakt",
+        },
+      });
+    }
+  }, [isTraktAuthenticated, profile.auth]);
+
+  useEffect(() => {
+    if (dataExport.exportUrl) {
+      platform.openExternal(dataExport.exportUrl);
+    }
+  }, [dataExport.exportUrl]);
+
+  useEffect(() => {
+    if (isTraktAuthenticated && traktAuthStarted) {
+      core.transport.dispatch({
+        action: "Ctx",
+        args: {
+          action: "InstallTraktAddon",
+        },
+      });
+      setTraktAuthStarted(false);
+    }
+  }, [isTraktAuthenticated, traktAuthStarted]);
+
+  return (
+    <>
+      <Section ref={ref}>
+        <User profile={profile} />
+      </Section>
+
+      <Section
+        style={{
+          background: "rgba(255,255,255,0.02)",
+          borderRadius: "18px",
+          margin: "30px 0",
+          padding: "24px 18px",
+          boxShadow: "0 2px 12px 0 rgba(0,0,0,0.10)",
+        }}
+      >
+        <h3
+          style={{
+            color: "#fff",
+            marginBottom: "18px",
+            fontSize: "1.3rem",
+            fontWeight: 900,
+            letterSpacing: "0.5px",
+            textAlign: "right",
+          }}
+        >
+          התקנת תוספים של סטרימיו ישראל
+        </h3>
+        <div className={styles["israel-addons-container"]}>
+          <Button
+            className={"button"}
+            onClick={onOpenInstallModal}
+            disabled={!profile?.auth?.user}
+          >
+            התקנת תוספים
+          </Button>
+          <Button
+            className={"button"}
+            onClick={onBackupAddons}
+            disabled={!profile?.auth?.user}
+            style={{ opacity: 0.7, fontSize: "0.9rem" }}
+          >
+            גיבוי תוספים קיימים
+          </Button>
+        </div>
+      </Section>
+
+      {isInstallModalOpen ? (
+        <ModalDialog
+          className={styles["israel-addons-modal"]}
+          title={"שמירת תוספים קיימים"}
+          onCloseRequest={onCloseInstallModal}
+          buttons={[
             {
-                profile?.auth?.user &&
-                    <Link
-                        label={t('SETTINGS_DATA_EXPORT')}
-                        onClick={onExportData}
-                    />
-            }
+              className: styles["modal-primary"],
+              label: "שמור את התוספים",
+              props: {
+                onClick: () => onConfirmInstall(true),
+              },
+            },
             {
-                profile?.auth?.user &&
-                    <Link                        label={t('SETTINGS_SUBSCRIBE_CALENDAR')}
-                        onClick={onCalendarSubscribe}
-                    />
-            }
-            <Link
-                label={t('SETTINGS_SUPPORT')}
-                href={'https://stremio.zendesk.com/hc/en-us'}
-            />
-            <Link
-                label={t('SETTINGS_SOURCE_CODE')}
-                href={`https://github.com/stremio/stremio-web/tree/${process.env.COMMIT_HASH}`}
-            />
-            <Link
-                label={t('TERMS_OF_SERVICE')}
-                href={'https://www.stremio.com/tos'}
-            />
-            <Link
-                label={t('PRIVACY_POLICY')}
-                href={'https://www.stremio.com/privacy'}
-            />
-            {
-                profile?.auth?.user &&
-                    <Link
-                        label={t('SETTINGS_ACC_DELETE')}
-                        href={'https://stremio.zendesk.com/hc/en-us/articles/360021428911-How-to-delete-my-account'}
-                    />
-            }
-            {
-                profile?.auth?.user?.email &&
-                    <Link
-                        label={t('SETTINGS_CHANGE_PASSWORD')}
-                        href={`https://www.strem.io/reset-password/${profile.auth.user.email}`}
-                    />
-            }
-            <Option className={styles['trakt-container']} icon={'trakt'} label={t('SETTINGS_TRAKT')}>
-                <Button className={'button'} title={isTraktAuthenticated ? t('LOG_OUT') : t('SETTINGS_TRAKT_AUTHENTICATE')} disabled={profile.auth === null} tabIndex={-1} onClick={onToggleTrakt}>
-                    {isTraktAuthenticated ? t('LOG_OUT') : t('SETTINGS_TRAKT_AUTHENTICATE')}
-                </Button>
-            </Option>
-        </Section>
+              className: styles["modal-secondary"],
+              label: "אל תשמור",
+              props: {
+                onClick: () => onConfirmInstall(false),
+              },
+            },
+          ]}
+        >
+          <p className={styles["israel-addons-modal-text"]}>
+            האם לשמור את התוספים הקיימים בחשבון לפני ההתקנה?
+          </p>
+          <p className={styles["israel-addons-modal-hint"]}>
+            אם בוחרים לא לשמור, התוספים הקיימים יוסרו לפני ההתקנה.
+          </p>
+        </ModalDialog>
+      ) : null}
 
-        <Section>
-            <Option label={'SETTINGS_UI_LANGUAGE'}>
-                <MultiselectMenu
-                    className={'multiselect'}
-                    {...interfaceLanguageSelect}
-                />
-            </Option>
-            {
-                shell.active &&
-                    <Option label={'SETTINGS_QUIT_ON_CLOSE'}>
-                        <Toggle
-                            tabIndex={-1}
-                            {...quitOnCloseToggle}
-                        />
-                    </Option>
+      <Section>
+        {profile?.auth?.user && (
+          <Link label={t("SETTINGS_DATA_EXPORT")} onClick={onExportData} />
+        )}
+        {profile?.auth?.user && (
+          <Link
+            label={t("SETTINGS_SUBSCRIBE_CALENDAR")}
+            onClick={onCalendarSubscribe}
+          />
+        )}
+        <Link
+          label={t("SETTINGS_SUPPORT")}
+          href={"https://stremio.zendesk.com/hc/en-us"}
+        />
+        <Link
+          label={t("SETTINGS_SOURCE_CODE")}
+          href={`https://github.com/stremio/stremio-web/tree/${process.env.COMMIT_HASH}`}
+        />
+        <Link
+          label={t("TERMS_OF_SERVICE")}
+          href={"https://www.stremio.com/tos"}
+        />
+        <Link
+          label={t("PRIVACY_POLICY")}
+          href={"https://www.stremio.com/privacy"}
+        />
+        {profile?.auth?.user && (
+          <Link
+            label={t("SETTINGS_ACC_DELETE")}
+            href={
+              "https://stremio.zendesk.com/hc/en-us/articles/360021428911-How-to-delete-my-account"
             }
-            {
-                shell.active &&
-                    <Option label={'SETTINGS_FULLSCREEN_EXIT'}>
-                        <Toggle
-                            tabIndex={-1}
-                            {...escExitFullscreenToggle}
-                        />
-                    </Option>
+          />
+        )}
+        {profile?.auth?.user?.email && (
+          <Link
+            label={t("SETTINGS_CHANGE_PASSWORD")}
+            href={`https://www.strem.io/reset-password/${profile.auth.user.email}`}
+          />
+        )}
+        <Option
+          className={styles["trakt-container"]}
+          icon={"trakt"}
+          label={t("SETTINGS_TRAKT")}
+        >
+          <Button
+            className={"button"}
+            title={
+              isTraktAuthenticated
+                ? t("LOG_OUT")
+                : t("SETTINGS_TRAKT_AUTHENTICATE")
             }
-            <Option label={'SETTINGS_BLUR_UNWATCHED_IMAGE'}>
-                <Toggle
-                    tabIndex={-1}
-                    {...hideSpoilersToggle}
-                />
-            </Option>
-        </Section>
-    </>;
+            disabled={profile.auth === null}
+            tabIndex={-1}
+            onClick={onToggleTrakt}
+          >
+            {isTraktAuthenticated
+              ? t("LOG_OUT")
+              : t("SETTINGS_TRAKT_AUTHENTICATE")}
+          </Button>
+        </Option>
+      </Section>
+
+      <Section>
+        <Option label={"SETTINGS_UI_LANGUAGE"}>
+          <MultiselectMenu
+            className={"multiselect"}
+            {...interfaceLanguageSelect}
+          />
+        </Option>
+        {shell.active && (
+          <Option label={"SETTINGS_QUIT_ON_CLOSE"}>
+            <Toggle tabIndex={-1} {...quitOnCloseToggle} />
+          </Option>
+        )}
+        {shell.active && (
+          <Option label={"SETTINGS_FULLSCREEN_EXIT"}>
+            <Toggle tabIndex={-1} {...escExitFullscreenToggle} />
+          </Option>
+        )}
+        <Option label={"SETTINGS_BLUR_UNWATCHED_IMAGE"}>
+          <Toggle tabIndex={-1} {...hideSpoilersToggle} />
+        </Option>
+      </Section>
+    </>
+  );
 });
 
 export default General;
-
-
-
