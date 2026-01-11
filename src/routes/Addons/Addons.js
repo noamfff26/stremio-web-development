@@ -106,62 +106,80 @@ const Addons = ({ urlParams, queryParams }) => {
         setInstallingAll(true);
         setInstallProgressIndex(0);
         try {
-            if (choice === 'install') {
-                console.warn('[Addons] Starting default addon installation (sequential)...');
-
-                const total = DEFAULT_ADDONS.length;
-                let successCount = 0;
-                let failCount = 0;
-                const failedUrls = [];
-
-                for (let i = 0; i < total; i++) {
-                    const addonUrl = DEFAULT_ADDONS[i];
-                    setInstallProgressIndex(i + 1);
+            if (choice === 'clean') {
+                console.warn('[Addons] Starting removal of all existing addons for clean install...');
+                // Remove all installed addons
+                for (const addon of installedAddons.catalog) {
                     try {
-                        console.warn('[AddonInstaller] Fetching (sequential):', addonUrl);
-
-                        let response = await fetchWithTimeout(addonUrl, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000);
-                        if (!response.ok && !/manifest\\.json$/.test(addonUrl)) {
-                            const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
-                            console.warn('[AddonInstaller] Retrying with:', urlWithManifest);
-                            try { response = await fetchWithTimeout(urlWithManifest, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000); } catch(e) { console.warn('[AddonInstaller] Retry failed', e.message); }
-                        }
-
-                        if (!response || !response.ok) {
-                            console.warn('[AddonInstaller] Failed to fetch after retry:', addonUrl, response && response.status);
-                            failCount++;
-                            failedUrls.push(addonUrl);
-                            continue;
-                        }
-
-                        let manifest;
-                        try { manifest = await response.json(); } catch (err) { console.warn('[AddonInstaller] JSON parse error:', addonUrl, err.message); failCount++; failedUrls.push(addonUrl); continue; }
-
-                        if (!manifest || !manifest.id || !manifest.name) {
-                            console.warn('[AddonInstaller] Invalid manifest:', addonUrl);
-                            failCount++;
-                            failedUrls.push(addonUrl);
-                            continue;
-                        }
-
-                        console.warn('[AddonInstaller] Installing:', manifest.name);
-                        core.transport.dispatch({ action: 'Ctx', args: { action: 'InstallAddon', args: { transportUrl: addonUrl, manifest } } });
-
-                        await new Promise(r => setTimeout(r, 600));
-                        successCount++;
+                        core.transport.dispatch({
+                            action: 'Ctx',
+                            args: {
+                                action: 'UninstallAddon',
+                                args: {
+                                    transportUrl: addon.transportUrl,
+                                    manifest: addon.manifest
+                                }
+                            }
+                        });
+                        console.warn('[Addons] Removed addon:', addon.manifest.name);
                     } catch (error) {
-                        console.warn('[AddonInstaller] Error installing:', addonUrl, error.message);
-                        failCount++;
-                        failedUrls.push(addonUrl);
+                        console.warn('[Addons] Failed to remove addon:', addon.manifest.name, error.message);
                     }
                 }
-
-                console.warn('[Addons] Sequential installation complete', { successCount, failCount });
-                toast.show({ type: 'success', title: `╫פ╫¬╫º╫á╫פ ╫פ╫ץ╫⌐╫£╫₧╫פ: ${successCount} ╫פ╫ª╫£╫ק╫ץ╫¬, ${failCount} ╫á╫¢╫⌐╫£╫ץ`, timeout: 6000 });
-            } else {
-                console.warn('[Addons] Skipping installation');
-                toast.show({ type: 'info', title: 'ההתקנה בוטלה', timeout: 3000 });
+                console.warn('[Addons] Removal of all existing addons complete');
             }
+
+            console.warn('[Addons] Starting default addon installation (sequential)...');
+
+            const total = DEFAULT_ADDONS.length;
+            let successCount = 0;
+            let failCount = 0;
+            const failedUrls = [];
+
+            for (let i = 0; i < total; i++) {
+                const addonUrl = DEFAULT_ADDONS[i];
+                setInstallProgressIndex(i + 1);
+                try {
+                    console.warn('[AddonInstaller] Fetching (sequential):', addonUrl);
+
+                    let response = await fetchWithTimeout(addonUrl, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000);
+                    if (!response.ok && !/manifest\\.json$/.test(addonUrl)) {
+                        const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
+                        console.warn('[AddonInstaller] Retrying with:', urlWithManifest);
+                        try { response = await fetchWithTimeout(urlWithManifest, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000); } catch(e) { console.warn('[AddonInstaller] Retry failed', e.message); }
+                    }
+
+                    if (!response || !response.ok) {
+                        console.warn('[AddonInstaller] Failed to fetch after retry:', addonUrl, response && response.status);
+                        failCount++;
+                        failedUrls.push(addonUrl);
+                        continue;
+                    }
+
+                    let manifest;
+                    try { manifest = await response.json(); } catch (err) { console.warn('[AddonInstaller] JSON parse error:', addonUrl, err.message); failCount++; failedUrls.push(addonUrl); continue; }
+
+                    if (!manifest || !manifest.id || !manifest.name) {
+                        console.warn('[AddonInstaller] Invalid manifest:', addonUrl);
+                        failCount++;
+                        failedUrls.push(addonUrl);
+                        continue;
+                    }
+
+                    console.warn('[AddonInstaller] Installing:', manifest.name);
+                    core.transport.dispatch({ action: 'Ctx', args: { action: 'InstallAddon', args: { transportUrl: addonUrl, manifest } } });
+
+                    await new Promise(r => setTimeout(r, 600));
+                    successCount++;
+                } catch (error) {
+                    console.warn('[AddonInstaller] Error installing:', addonUrl, error.message);
+                    failCount++;
+                    failedUrls.push(addonUrl);
+                }
+            }
+
+            console.warn('[Addons] Sequential installation complete', { successCount, failCount });
+            toast.show({ type: 'success', title: `╫פ╫¬╫º╫á╫פ ╫פ╫ץ╫⌐╫£╫₧╫פ: ${successCount} ╫פ╫ª╫£╫ק╫ץ╫¬, ${failCount} ╫á╫¢╫⌐╫£╫ץ`, timeout: 6000 });
         } catch (error) {
             console.error('[Addons] Error during addon setup:', error);
             toast.show({ type: 'error', title: '╫⌐╫ע╫ש╫נ╫פ ╫ס╫פ╫¬╫º╫á╫¬ ╫פ╫¬╫ץ╫í╫ñ╫ש╫¥', timeout: 4000 });
@@ -170,7 +188,7 @@ const Addons = ({ urlParams, queryParams }) => {
             setInstallProgressIndex(0);
             closeInstallAllModal();
         }
-    }, [core, toast]);
+    }, [core, installedAddons.catalog, toast]);
 
     const confirmInstallAllAddons = React.useCallback(() => {
         openInstallChoiceModal();
@@ -408,21 +426,21 @@ const Addons = ({ urlParams, queryParams }) => {
                 installChoiceModalOpen ?
                     <ModalDialog
                         className={styles['install-choice-modal-container']}
-                        title={'התקנת תוספים חדשים'}
+                        title={'סוג ההתקנה'}
                         onCloseRequest={closeInstallChoiceModal}>
                         <div className={styles['install-choice-body']}>
                             <div className={styles['install-choice-question']}>
-                                האם להתקין את התוספים החדשים?
+                                בחר סוג ההתקנה:
                             </div>
                             <div className={styles['install-choice-hint']}>
-                                ניתן להתקין את התוספים החדשים או לדלג עליהם.
+                                התקנה נקייה תסיר את כל התוספים הקיימים ותתקין חדשים. התקנה לא נקייה תשמור על התוספים הקיימים ותוסיף חדשים.
                             </div>
                             <div className={styles['install-choice-actions']}>
-                                <Button className={styles['choice-primary']} onClick={() => handleInstallChoice('install')}>
-                                    התקן
+                                <Button className={styles['choice-primary']} onClick={() => handleInstallChoice('clean')}>
+                                    התקנה נקייה
                                 </Button>
-                                <Button className={styles['choice-secondary']} onClick={() => handleInstallChoice('skip')}>
-                                    אל תתקין
+                                <Button className={styles['choice-secondary']} onClick={() => handleInstallChoice('non-clean')}>
+                                    התקנה לא נקייה
                                 </Button>
                             </div>
                         </div>
