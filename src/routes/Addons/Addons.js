@@ -164,15 +164,15 @@ const Addons = ({ urlParams, queryParams }) => {
                     successCount++;
 } catch (error) {
                     console.log('[AddonInstaller] Error installing:', addonUrl, error.message);
-                    throw error;
+                    failCount++;
+                    failedUrls.push(addonUrl);
                 }
             }
 
             console.log('[Addons] Sequential installation complete', { successCount, failCount });
             toast.show({ type: failCount > 0 ? 'error' : 'success', title: `התקנה הושלמה: ${successCount} הצלחות, ${failCount} נכשלו`, timeout: 6000 });
-        } catch (error) {
-            console.error('[Addons] Error during addon setup:', error);
-            toast.show({ type: 'error', title: 'שגיאה בהתקנת התוספים', timeout: 4000 });
+} catch (error) {
+            console.error('[Addons] Unexpected error during addon setup:', error);
         } finally {
             setInstallingAll(false);
             setInstallProgressIndex(0);
