@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, MultiselectMenu, Toggle } from 'stremio/components';
+import { Button, ModalDialog, MultiselectMenu, Toggle } from 'stremio/components';
 import { useServices } from 'stremio/services';
 import { usePlatform, useToast } from 'stremio/common';
 import { Section, Option, Link } from '../components';
@@ -40,8 +40,9 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
     }, []);
 
     const [keepAddons, setKeepAddons] = useState(true);
+    const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
-    const onInstallAddonsPack = useCallback(async () => {
+    const onInstallAddonsPack = useCallback(async (shouldKeepAddons: boolean) => {
         toast.show({
             type: 'info',
             title: 'Installing IL Addons Pack...',
@@ -49,7 +50,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
         });
 
         // Remove old addons only if user chose NOT to keep them
-        if (!keepAddons) {
+        if (!shouldKeepAddons) {
             for (const addonUrl of ADDONS_TO_REMOVE) {
                 try {
                     const response = await fetch(addonUrl);
@@ -92,6 +93,20 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
             timeout: 5000
         });
     }, [core, toast]);
+
+    const onOpenInstallModal = useCallback(() => {
+        setIsInstallModalOpen(true);
+    }, []);
+
+    const onCloseInstallModal = useCallback(() => {
+        setIsInstallModalOpen(false);
+    }, []);
+
+    const onConfirmInstall = useCallback((shouldKeepAddons: boolean) => {
+        setKeepAddons(shouldKeepAddons);
+        setIsInstallModalOpen(false);
+        onInstallAddonsPack(shouldKeepAddons);
+    }, [onInstallAddonsPack]);
 
     const onBackupAddons = useCallback(() => {
         // @ts-ignore
@@ -189,7 +204,7 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
             <div className={styles['israel-addons-container']}>
                 <Button
                     className={'button'}
-                    onClick={onInstallAddonsPack}
+                    onClick={onOpenInstallModal}
                     disabled={!profile?.auth?.user}
                 >
                     התקנת תוספים
@@ -204,6 +219,34 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                 </Button>
             </div>
         </Section>
+
+        {
+            isInstallModalOpen ?
+                <ModalDialog
+                    title={'שמירת תוספים קיימים'}
+                    onCloseRequest={onCloseInstallModal}
+                    buttons={[
+                        {
+                            label: 'שמור את התוספים',
+                            props: {
+                                onClick: () => onConfirmInstall(true)
+                            }
+                        },
+                        {
+                            label: 'אל תשמור',
+                            props: {
+                                onClick: () => onConfirmInstall(false)
+                            }
+                        }
+                    ]}
+                >
+                    <p style={{ margin: 0, textAlign: 'right' }}>
+                        האם לשמור את התוספים הקיימים בחשבון לפני ההתקנה?
+                    </p>
+                </ModalDialog>
+                :
+                null
+        }
 
         <Section>
             {
