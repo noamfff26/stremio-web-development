@@ -44,6 +44,7 @@ const removeAddons = async (core) => {
 const installDefaultAddons = async (core) => {
     let successCount = 0;
     let failCount = 0;
+    const failedUrls = [];
 
     console.log('[AddonInstaller] Starting installation of', DEFAULT_ADDONS.length, 'addons');
 
