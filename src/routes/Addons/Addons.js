@@ -18,6 +18,14 @@ const useSelectableInputs = require('./useSelectableInputs');
 const styles = require('./styles');
 const { AddonPlaceholder } = require('./AddonPlaceholder');
 
+function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const finalOptions = Object.assign({}, options || {}, { signal: controller.signal });
+  return fetch(url, finalOptions).finally(() => clearTimeout(timer));
+}
+
+
 const Addons = ({ urlParams, queryParams }) => {
     const { t } = useTranslation();
     const platform = usePlatform();
@@ -94,10 +102,15 @@ const Addons = ({ urlParams, queryParams }) => {
         setCleanInstallSelected(prev => !prev);
     }, []);
 
+    const [installingAll, setInstallingAll] = React.useState(false);
+    const [installProgressIndex, setInstallProgressIndex] = React.useState(0);
+
     const confirmInstallAllAddons = React.useCallback(async () => {
         console.log('[Addons] Install all button clicked');
         console.log('[Addons] Clean install:', cleanInstallSelected);
-        closeInstallAllModal();
+
+        setInstallingAll(true);
+        setInstallProgressIndex(0);
 
         try {
             if (cleanInstallSelected) {
@@ -106,45 +119,83 @@ const Addons = ({ urlParams, queryParams }) => {
                 console.log('[Addons] Addon removal complete');
             }
 
-            console.log('[Addons] Starting default addon installation...');
-            const result = await installDefaultAddons(core);
-            console.log('[Addons] Installation result:', result);
-            console.log('[Addons] Default addon installation complete');
+            console.log('[Addons] Starting default addon installation (sequential)...');
 
-            if (result && result.failCount > 0) {
-                const shortList = (result.failedUrls || []).slice(0, 3).map(u => u.replace(/^https?:\/\//, '')).join('\n');
-                toast.show({
-                    type: 'error',
-                    title: `התקנה הושלמה: ${result.successCount} הצלחות, ${result.failCount} נכשלו`,
-                    timeout: 7000,
-                    description: `בעיות ב-:\n${shortList}${(result.failedUrls && result.failedUrls.length > 3) ? '\n...' : ''}`
-                });
-            } else {
-                toast.show({
-                    type: 'success',
-                    title: `התקנה הושלמה: ${result.successCount} תוספים הותקנו`,
-                    timeout: 4000
-                });
+            const total = DEFAULT_ADDONS.length;
+            let successCount = 0;
+            let failCount = 0;
+            const failedUrls = [];
+
+            for (let i = 0; i < total; i++) {
+                const addonUrl = DEFAULT_ADDONS[i];
+                setInstallProgressIndex(i + 1);
+                try {
+                    console.log('[AddonInstaller] Fetching (sequential):', addonUrl);
+
+                    let response = await fetchWithTimeout(addonUrl, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000);
+                    if (!response.ok && !/manifest\.json$/.test(addonUrl)) {
+                        const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
+                        console.log('[AddonInstaller] Retrying with:', urlWithManifest);
+                        try { response = await fetchWithTimeout(urlWithManifest, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000); } catch(e) { console.log('[AddonInstaller] Retry failed', e.message); }
+                    }
+
+                    if (!response || !response.ok) {
+                        console.log('[AddonInstaller] Failed to fetch after retry:', addonUrl, response && response.status);
+                        failCount++;
+                        failedUrls.push(addonUrl);
+                        continue;
+                    }
+
+                    let manifest;
+                    try { manifest = await response.json(); } catch (err) { console.log('[AddonInstaller] JSON parse error:', addonUrl, err.message); failCount++; failedUrls.push(addonUrl); continue; }
+
+                    if (!manifest || !manifest.id || !manifest.name) {
+                        console.log('[AddonInstaller] Invalid manifest:', addonUrl);
+                        failCount++;
+                        failedUrls.push(addonUrl);
+                        continue;
+                    }
+
+                    console.log('[AddonInstaller] Installing (sequential):', manifest.name);
+                    core.transport.dispatch({ action: 'Ctx', args: { action: 'InstallAddon', args: { transportUrl: addonUrl, manifest } } });
+
+                    // give core a small moment to process between installs
+                    await new Promise(r => setTimeout(r, 600));
+                    successCount++;
+                } catch (error) {
+                    console.log('[AddonInstaller] Error installing:', addonUrl, error.message);
+                    failCount++;
+                    failedUrls.push(addonUrl);
+                }
             }
+
+            console.log('[Addons] Sequential installation complete', { successCount, failCount });
+            toast.show({ type: failCount > 0 ? 'error' : 'success', title: `התקנה הושלמה: ${successCount} הצלחות, ${failCount} נכשלו`, timeout: 6000 });
         } catch (error) {
             console.error('[Addons] Error during addon setup:', error);
             toast.show({ type: 'error', title: 'שגיאה בהתקנת התוספים', timeout: 4000 });
+        } finally {
+            setInstallingAll(false);
+            setInstallProgressIndex(0);
+            closeInstallAllModal();
         }
-    }, [core, cleanInstallSelected]);
+    }, [core, cleanInstallSelected, closeInstallAllModal, toast]);
     const installAllModalButtons = React.useMemo(() => {
         return [
             {
                 className: styles['cancel-button'],
                 label: 'ביטול',
                 props: {
-                    onClick: closeInstallAllModal
+                    onClick: closeInstallAllModal,
+                    disabled: installingAll
                 }
             },
             {
                 className: styles['confirm-button'],
                 label: 'התקן',
                 props: {
-                    onClick: confirmInstallAllAddons
+                    onClick: confirmInstallAllAddons,
+                    disabled: installingAll
                 }
             }
         ];
@@ -327,19 +378,35 @@ const Addons = ({ urlParams, queryParams }) => {
                         title={'התקן את כל התוספים'}
                         buttons={installAllModalButtons}
                         onCloseRequest={closeInstallAllModal}>
-                        <div className={styles['notice']}>
-                            <div style={{ marginBottom: '1rem', fontSize: '1.1rem', lineHeight: '1.6' }}>
-                                פעולה זו תתקין {DEFAULT_ADDONS.length} תוספים מומלצים לשימוש מיטבי באפליקציה.
+                        { installingAll ?
+                            <div style={{ padding: '1rem 0', textAlign: 'center' }}>
+                                <div style={{ marginBottom: '0.75rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary-foreground-color)' }}>
+                                    מתקין תוספים — {installProgressIndex} / {DEFAULT_ADDONS.length}
+                                </div>
+                                <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', margin: '0 2rem' }}>
+                                    <div style={{ width: `${Math.round((installProgressIndex / DEFAULT_ADDONS.length) * 100)}%`, height: '100%', background: 'var(--secondary-accent-color)', borderRadius: '8px' }} />
+                                </div>
+                                <div style={{ marginTop: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.75)' }}>
+                                    אל תסגור את החלון — ההתקנה תתבצע בשקט.
+                                </div>
                             </div>
-                            <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                                התוספים כוללים: קטלוגים, כתוביות בעברית, ומקורות סטרימינג.
-                            </div>
-                        </div>
-                        <Checkbox
-                            label={'הסר תוספים קיימים לפני ההתקנה (מומלץ)'}
-                            checked={cleanInstallSelected}
-                            onChange={toggleCleanInstall}
-                        />
+                            :
+                            <>
+                                <div className={styles['notice']}>
+                                    <div style={{ marginBottom: '1rem', fontSize: '1.1rem', lineHeight: '1.6' }}>
+                                        פעולה זו תתקין {DEFAULT_ADDONS.length} תוספים מומלצים לשימוש מיטבי באפליקציה.
+                                    </div>
+                                    <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                                        התוספים כוללים: קטלוגים, כתוביות בעברית, ומקורות סטרימינג.
+                                    </div>
+                                </div>
+                                <Checkbox
+                                    label={'הסר תוספים קיימים לפני ההתקנה (מומלץ)'}
+                                    checked={cleanInstallSelected}
+                                    onChange={toggleCleanInstall}
+                                />
+                            </>
+                        }
                     </ModalDialog>
                     :
                     null

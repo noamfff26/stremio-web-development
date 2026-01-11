@@ -2,17 +2,23 @@
 
 const { DEFAULT_ADDONS, ADDONS_TO_REMOVE } = require('./addonsConfig');
 
+function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const finalOptions = Object.assign({}, options || {}, { signal: controller.signal });
+  return fetch(url, finalOptions).finally(() => clearTimeout(timer));
+}
+
 // Function to remove specific addons (only non-protected)
 const removeAddons = async (core) => {
     const removePromises = ADDONS_TO_REMOVE.map(async (addonUrl) => {
         try {
-            const response = await fetch(addonUrl, {
+            const response = await fetchWithTimeout(addonUrl, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
-                },
-                signal: AbortSignal.timeout(5000) // 5 second timeout
-            });
+                }
+            }, 5000);
 
             if (!response.ok) {
                 console.log('Failed to fetch addon manifest:', addonUrl, response.status);
@@ -54,13 +60,12 @@ const installDefaultAddons = async (core) => {
             console.log('[AddonInstaller] Fetching:', addonUrl);
 
             // Try fetching the URL as provided first
-            let response = await fetch(addonUrl, {
+            let response = await fetchWithTimeout(addonUrl, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
-                },
-                signal: AbortSignal.timeout(10000) // 10 second timeout per addon
-            });
+                }
+            }, 10000);
 
             // If initial fetch failed and addonUrl does not already end with manifest.json,
             // try appending '/manifest.json' as a fallback.
@@ -70,11 +75,10 @@ const installDefaultAddons = async (core) => {
                     const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
                     console.log('[AddonInstaller] Retrying with:', urlWithManifest);
                     try {
-                        response = await fetch(urlWithManifest, {
+response = await fetchWithTimeout(urlWithManifest, {
                             method: 'GET',
-                            headers: { 'Accept': 'application/json' },
-                            signal: AbortSignal.timeout(10000)
-                        });
+                            headers: { 'Accept': 'application/json' }
+                        }, 10000);
                     } catch (e) {
                         console.log('[AddonInstaller] Retry fetch error:', urlWithManifest, e.message);
                     }
