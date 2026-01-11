@@ -162,10 +162,9 @@ const Addons = ({ urlParams, queryParams }) => {
                     // give core a small moment to process between installs
                     await new Promise(r => setTimeout(r, 600));
                     successCount++;
-                } catch (error) {
+} catch (error) {
                     console.log('[AddonInstaller] Error installing:', addonUrl, error.message);
-                    failCount++;
-                    failedUrls.push(addonUrl);
+                    throw error;
                 }
             }
 
