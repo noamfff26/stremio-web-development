@@ -111,8 +111,26 @@ response = await fetchWithTimeout(urlWithManifest, {
 
             console.log('[AddonInstaller] Installing:', manifest.name);
 
-            // Use a Promise to handle the installation
-            await new Promise((resolve) => {
+            // Use a Promise to handle the installation with error handling
+            await new Promise((resolve, reject) => {
+                const installHandler = ({ event, args }) => {
+                    if (event === 'AddonInstalled' && args.transportUrl === addonUrl) {
+                        core.transport.off('CoreEvent', installHandler);
+                        resolve();
+                    } else if (event === 'Error' && args.source.event === 'AddonInstalled' && args.source.args.transportUrl === addonUrl) {
+                        core.transport.off('CoreEvent', installHandler);
+                        // Don't reject for code 3 errors (non-critical)
+                        if (args.error.type === 'Other' && args.error.code === 3) {
+                            console.log('[AddonInstaller] Non-critical error during installation, treating as success:', args.error);
+                            resolve();
+                        } else {
+                            reject(new Error(`Installation failed: ${args.error.message || 'Unknown error'}`));
+                        }
+                    }
+                };
+
+                core.transport.on('CoreEvent', installHandler);
+
                 core.transport.dispatch({
                     action: 'Ctx',
                     args: {
@@ -124,8 +142,11 @@ response = await fetchWithTimeout(urlWithManifest, {
                     }
                 });
 
-                // Give it a moment to process
-                setTimeout(resolve, 500);
+                // Give it a moment to process, but don't reject on timeout
+                setTimeout(() => {
+                    core.transport.off('CoreEvent', installHandler);
+                    resolve();
+                }, 3000);
             });
 
             console.log('[AddonInstaller] Successfully installed:', manifest.name);

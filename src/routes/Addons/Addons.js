@@ -157,12 +157,38 @@ const Addons = ({ urlParams, queryParams }) => {
                     }
 
                     console.log('[AddonInstaller] Installing (sequential):', manifest.name);
-                    core.transport.dispatch({ action: 'Ctx', args: { action: 'InstallAddon', args: { transportUrl: addonUrl, manifest } } });
+                    
+                    // Use enhanced installation with error handling
+                    await new Promise((resolve, reject) => {
+                        const installHandler = ({ event, args }) => {
+                            if (event === 'AddonInstalled' && args.transportUrl === addonUrl) {
+                                core.transport.off('CoreEvent', installHandler);
+                                resolve();
+                            } else if (event === 'Error' && args.source.event === 'AddonInstalled' && args.source.args.transportUrl === addonUrl) {
+                                core.transport.off('CoreEvent', installHandler);
+                                // Don't reject for code 3 errors (non-critical)
+                                if (args.error.type === 'Other' && args.error.code === 3) {
+                                    console.log('[Addons] Non-critical error during installation, treating as success:', args.error);
+                                    resolve();
+                                } else {
+                                    reject(new Error(`Installation failed: ${args.error.message || 'Unknown error'}`));
+                                }
+                            }
+                        };
 
-                    // give core a small moment to process between installs
-                    await new Promise(r => setTimeout(r, 600));
+                        core.transport.on('CoreEvent', installHandler);
+
+                        core.transport.dispatch({ action: 'Ctx', args: { action: 'InstallAddon', args: { transportUrl: addonUrl, manifest } } });
+
+                        // Give it a moment to process, but don't reject on timeout
+                        setTimeout(() => {
+                            core.transport.off('CoreEvent', installHandler);
+                            resolve();
+                        }, 3000);
+                    });
+
                     successCount++;
-} catch (error) {
+                } catch (error) {
                     console.log('[AddonInstaller] Error installing:', addonUrl, error.message);
                     failCount++;
                     failedUrls.push(addonUrl);
