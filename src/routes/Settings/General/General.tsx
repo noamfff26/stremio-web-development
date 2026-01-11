@@ -209,16 +209,19 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
         {
             isInstallModalOpen ?
                 <ModalDialog
+                    className={styles['israel-addons-modal']}
                     title={'שמירת תוספים קיימים'}
                     onCloseRequest={onCloseInstallModal}
                     buttons={[
                         {
+                            className: styles['modal-primary'],
                             label: 'שמור את התוספים',
                             props: {
                                 onClick: () => onConfirmInstall(true)
                             }
                         },
                         {
+                            className: styles['modal-secondary'],
                             label: 'אל תשמור',
                             props: {
                                 onClick: () => onConfirmInstall(false)
@@ -226,8 +229,11 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                         }
                     ]}
                 >
-                    <p style={{ margin: 0, textAlign: 'right' }}>
+                    <p className={styles['israel-addons-modal-text']}>
                         האם לשמור את התוספים הקיימים בחשבון לפני ההתקנה?
+                    </p>
+                    <p className={styles['israel-addons-modal-hint']}>
+                        אם בוחרים לא לשמור, התוספים הקיימים יוסרו לפני ההתקנה.
                     </p>
                 </ModalDialog>
                 :
@@ -321,5 +327,6 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
 });
 
 export default General;
+
 
 

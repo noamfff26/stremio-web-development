@@ -2,11 +2,96 @@
     option-icon: icon;
 }
 
+:import('~stremio/components/ModalDialog/styles.less') {
+    modal-dialog-container: modal-dialog-container;
+    modal-dialog-content: modal-dialog-content;
+    modal-title: title-container;
+    modal-body: body-container;
+    modal-buttons: buttons-container;
+    modal-action: action-button;
+}
+
 .trakt-container {
     margin-top: 2rem;
 
     .option-icon {
         color: var(--color-trakt) !important;
+    }
+}
+
+.israel-addons-modal {
+    .modal-dialog-container {
+        max-width: 36rem;
+        width: 90%;
+    }
+
+    .modal-dialog-content {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .modal-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-foreground-color);
+    }
+
+    .modal-body {
+        padding: 1.25rem 0 0;
+    }
+
+    .modal-buttons {
+        margin: 1.5rem 0 0;
+        gap: 0.75rem;
+    }
+
+    .modal-action {
+        margin-right: 0;
+        height: 3.25rem;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+}
+
+.israel-addons-modal-text {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--primary-foreground-color);
+}
+
+.israel-addons-modal-hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.modal-primary {
+    background-color: var(--secondary-accent-color);
+    color: var(--primary-foreground-color);
+
+    &:hover {
+        background-color: transparent;
+        outline: var(--focus-outline-size) solid var(--secondary-accent-color);
+    }
+}
+
+.modal-secondary {
+    background-color: var(--overlay-color);
+    color: var(--primary-foreground-color);
+
+    &:hover {
+        background-color: var(--overlay-color-hover);
+        outline: var(--focus-outline-size) solid var(--primary-foreground-color);
+    }
+}
+
+@media only screen and (max-width: @minimum) {
+    .israel-addons-modal {
+        .modal-buttons {
+            flex-direction: column;
+        }
     }
 }
 
