@@ -22,7 +22,9 @@ const ServicesToaster = () => {
                         break;
                     }
 
-                    if (args.error.type === 'Other' && args.error.code === 3 && args.source.event === 'AddonInstalled' && args.source.args.transport_url.startsWith('https://www.strem.io/trakt/addon')) {
+                    // Filter out non-critical AddonInstalled errors (code 3) - these are often false positives
+                    // where installation succeeds despite the error event
+                    if (args.error.type === 'Other' && args.error.code === 3 && args.source.event === 'AddonInstalled') {
                         break;
                     }
 
