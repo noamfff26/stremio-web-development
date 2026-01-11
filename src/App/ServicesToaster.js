@@ -22,9 +22,9 @@ const ServicesToaster = () => {
                         break;
                     }
 
-                    // Filter out non-critical AddonInstalled errors (code 3) - these are often false positives
+                    // Filter out non-critical AddonInstalled errors (code 3 and 4) - these are often false positives
                     // where installation succeeds despite the error event
-                    if (args.error.type === 'Other' && args.error.code === 3 && args.source.event === 'AddonInstalled') {
+                    if (args.error.type === 'Other' && (args.error.code === 3 || args.error.code === 4) && args.source.event === 'AddonInstalled') {
                         // Log the filtered error for debugging but don't show to user
                         console.log('[ServicesToaster] Filtering non-critical addon installation error:', args.error);
                         break;
