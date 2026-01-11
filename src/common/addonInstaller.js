@@ -13,19 +13,41 @@ function fetchWithTimeout(url, options, timeoutMs) {
 const removeAddons = async (core) => {
     const removePromises = ADDONS_TO_REMOVE.map(async (addonUrl) => {
         try {
-            const response = await fetchWithTimeout(addonUrl, {
+            let response = await fetchWithTimeout(addonUrl, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
                 }
             }, 5000);
 
-            if (!response.ok) {
-                console.warn('Failed to fetch addon manifest:', addonUrl, response.status);
+            if (!response.ok && !/manifest\.json$/.test(addonUrl)) {
+                const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
+                console.warn('RemoveAddons: retrying manifest fetch with', urlWithManifest);
+                try {
+                    response = await fetchWithTimeout(urlWithManifest, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }, 5000);
+                } catch (err) {
+                    console.warn('RemoveAddons: retry fetch error', err.message);
+                }
+            }
+
+            if (!response || !response.ok) {
+                console.warn('Failed to fetch addon manifest:', addonUrl, response && response.status);
                 return;
             }
 
-            const manifest = await response.json();
+            let manifest;
+            try {
+                manifest = await response.json();
+            } catch (err) {
+                console.warn('RemoveAddons: failed to parse manifest JSON', addonUrl, err.message);
+                return;
+            }
+
             core.transport.dispatch({
                 action: 'Ctx',
                 args: {
