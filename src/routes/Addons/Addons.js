@@ -129,7 +129,7 @@ const Addons = ({ urlParams, queryParams }) => {
 
                     let response = await fetchWithTimeout(addonUrl, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000);
                     if (!response.ok && !/manifest\\.json$/.test(addonUrl)) {
-                        const urlWithManifest = addonUrl.replace(/\\/+$/, '') + '/manifest.json';
+                        const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
                         console.warn('[AddonInstaller] Retrying with:', urlWithManifest);
                         try { response = await fetchWithTimeout(urlWithManifest, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000); } catch(e) { console.warn('[AddonInstaller] Retry failed', e.message); }
                     }
