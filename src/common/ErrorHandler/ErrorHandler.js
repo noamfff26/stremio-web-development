@@ -70,6 +70,11 @@ class ErrorHandler {
         try {
             const errorEntry = this.handle(error, context);
 
+            // If errorEntry is null (non-critical addon error), don't show toast
+            if (errorEntry === null) {
+                return null;
+            }
+
             const toastConfig = {
                 type: errorEntry.severity === 'warning' ? 'alert' : 'error',
                 title: errorEntry.title,
