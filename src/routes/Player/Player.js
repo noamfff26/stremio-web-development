@@ -933,17 +933,6 @@ const Player = ({ urlParams, queryParams }) => {
                     null
             }
             {
-                audioMenuOpen ?
-                    <AudioMenu
-                        className={classnames(styles['layer'], styles['menu-layer'])}
-                        audioTracks={video.state.audioTracks}
-                        selectedAudioTrackId={video.state.selectedAudioTrackId}
-                        onAudioTrackSelected={onAudioTrackSelected}
-                    />
-                    :
-                    null
-            }
-            {
                 speedMenuOpen ?
                     <SpeedMenu
                         className={classnames(styles['layer'], styles['menu-layer'])}
