@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2023 Smart code 203358507
+﻿// Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
 const PropTypes = require('prop-types');
@@ -8,7 +8,7 @@ const { default: Icon } = require('@stremio/stremio-icons/react');
 const { usePlatform, useBinaryState, withCoreSuspender, useToast } = require('stremio/common');
 const { DEFAULT_ADDONS } = require('stremio/common/addonsConfig');
 const { removeAddons } = require('stremio/common/addonInstaller');
-const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu, Checkbox } = require('stremio/components');
+const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu } = require('stremio/components');
 const { useServices } = require('stremio/services');
 const Addon = require('./Addon');
 const useInstalledAddons = require('./useInstalledAddons');
@@ -40,7 +40,7 @@ const Addons = ({ urlParams, queryParams }) => {
     const [filtersModalOpen, openFiltersModal, closeFiltersModal] = useBinaryState(false);
     const [addAddonModalOpen, openAddAddonModal, closeAddAddonModal] = useBinaryState(false);
     const [installAllModalOpen, openInstallAllModal, closeInstallAllModal] = useBinaryState(false);
-    const [cleanInstallSelected, setCleanInstallSelected] = React.useState(true);
+    const [installChoiceModalOpen, openInstallChoiceModal, closeInstallChoiceModal] = useBinaryState(false);
     const addAddonUrlInputRef = React.useRef(null);
     const addAddonOnSubmit = React.useCallback(() => {
         if (addAddonUrlInputRef.current !== null) {
@@ -100,10 +100,6 @@ const Addons = ({ urlParams, queryParams }) => {
         setAddonDetailsTransportUrl(event.dataset.addon.transportUrl);
     }, [setAddonDetailsTransportUrl]);
 
-    const toggleCleanInstall = React.useCallback(() => {
-        setCleanInstallSelected(prev => !prev);
-    }, []);
-
     const [installingAll, setInstallingAll] = React.useState(false);
     const [installProgressIndex, setInstallProgressIndex] = React.useState(0);
     const performInstallAllAddons = React.useCallback(async (choice) => {
@@ -133,7 +129,7 @@ const Addons = ({ urlParams, queryParams }) => {
 
                     let response = await fetchWithTimeout(addonUrl, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000);
                     if (!response.ok && !/manifest\\.json$/.test(addonUrl)) {
-                        const urlWithManifest = addonUrl.replace(/\/+$/, '') + '/manifest.json';
+                        const urlWithManifest = addonUrl.replace(/\\/+$/, '') + '/manifest.json';
                         console.warn('[AddonInstaller] Retrying with:', urlWithManifest);
                         try { response = await fetchWithTimeout(urlWithManifest, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000); } catch(e) { console.warn('[AddonInstaller] Retry failed', e.message); }
                     }
@@ -168,10 +164,10 @@ const Addons = ({ urlParams, queryParams }) => {
             }
 
             console.warn('[Addons] Sequential installation complete', { successCount, failCount });
-            toast.show({ type: 'success', title: `התקנה הושלמה: ${successCount} הצלחות, ${failCount} נכשלו`, timeout: 6000 });
+            toast.show({ type: 'success', title: `╫פ╫¬╫º╫á╫פ ╫פ╫ץ╫⌐╫£╫₧╫פ: ${successCount} ╫פ╫ª╫£╫ק╫ץ╫¬, ${failCount} ╫á╫¢╫⌐╫£╫ץ`, timeout: 6000 });
         } catch (error) {
             console.error('[Addons] Error during addon setup:', error);
-            toast.show({ type: 'error', title: 'שגיאה בהתקנת התוספים', timeout: 4000 });
+            toast.show({ type: 'error', title: '╫⌐╫ע╫ש╫נ╫פ ╫ס╫פ╫¬╫º╫á╫¬ ╫פ╫¬╫ץ╫í╫ñ╫ש╫¥', timeout: 4000 });
         } finally {
             setInstallingAll(false);
             setInstallProgressIndex(0);
@@ -180,16 +176,20 @@ const Addons = ({ urlParams, queryParams }) => {
     }, [core, removeAddons, toast]);
 
     const confirmInstallAllAddons = React.useCallback(() => {
-        const choice = cleanInstallSelected ? 'remove' : 'keep';
+        openInstallChoiceModal();
+    }, [openInstallChoiceModal]);
+
+    const handleInstallChoice = React.useCallback((choice) => {
+        closeInstallChoiceModal();
         performInstallAllAddons(choice);
-    }, [cleanInstallSelected, performInstallAllAddons]);
+    }, [closeInstallChoiceModal, performInstallAllAddons]);
 
     const installAllModalButtons = React.useMemo(() => {
 
         return [
             {
                 className: styles['cancel-button'],
-                label: 'ביטול',
+                label: '╫ס╫ש╫ר╫ץ╫£',
                 props: {
                     onClick: closeInstallAllModal,
                     disabled: installingAll
@@ -197,7 +197,7 @@ const Addons = ({ urlParams, queryParams }) => {
             },
             {
                 className: styles['confirm-button'],
-                label: 'התקן',
+                label: '╫פ╫¬╫º╫ƒ',
                 props: {
                     onClick: confirmInstallAllAddons,
                     disabled: installingAll
@@ -376,38 +376,72 @@ const Addons = ({ urlParams, queryParams }) => {
             installAllModalOpen ?
                     <ModalDialog
                         className={styles['install-all-modal-container']}
-                        title={'התקן את כל התוספים'}
+                        title={'╫פ╫¬╫º╫ƒ ╫נ╫¬ ╫¢╫£ ╫פ╫¬╫ץ╫í╫ñ╫ש╫¥'}
                         buttons={installAllModalButtons}
                         onCloseRequest={closeInstallAllModal}>
                         { installingAll ?
                             <div style={{ padding: '1rem 0', textAlign: 'center' }}>
                                 <div style={{ marginBottom: '0.75rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary-foreground-color)' }}>
-                                    מתקין תוספים — {installProgressIndex} / {DEFAULT_ADDONS.length}
+                                    ╫₧╫¬╫º╫ש╫ƒ ╫¬╫ץ╫í╫ñ╫ש╫¥ Γאפ {installProgressIndex} / {DEFAULT_ADDONS.length}
                                 </div>
                                 <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', margin: '0 2rem' }}>
                                     <div style={{ width: `${Math.round((installProgressIndex / DEFAULT_ADDONS.length) * 100)}%`, height: '100%', background: 'var(--secondary-accent-color)', borderRadius: '8px' }} />
                                 </div>
                                 <div style={{ marginTop: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.75)' }}>
-                                    אל תסגור את החלון — ההתקנה תתבצע בשקט.
+                                    ╫נ╫£ ╫¬╫í╫ע╫ץ╫¿ ╫נ╫¬ ╫פ╫ק╫£╫ץ╫ƒ Γאפ ╫פ╫פ╫¬╫º╫á╫פ ╫¬╫¬╫ס╫ª╫ó ╫ס╫⌐╫º╫ר.
                                 </div>
                             </div>
                             :
                             <>
                                 <div className={styles['notice']}>
                                     <div style={{ marginBottom: '1rem', fontSize: '1.1rem', lineHeight: '1.6' }}>
-                                        פעולה זו תתקין {DEFAULT_ADDONS.length} תוספים מומלצים לשימוש מיטבי באפליקציה.
+                                        ╫ñ╫ó╫ץ╫£╫פ ╫צ╫ץ ╫¬╫¬╫º╫ש╫ƒ {DEFAULT_ADDONS.length} ╫¬╫ץ╫í╫ñ╫ש╫¥ ╫₧╫ץ╫₧╫£╫ª╫ש╫¥ ╫£╫⌐╫ש╫₧╫ץ╫⌐ ╫₧╫ש╫ר╫ס╫ש ╫ס╫נ╫ñ╫£╫ש╫º╫ª╫ש╫פ.
                                     </div>
                                     <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                                        התוספים כוללים: קטלוגים, כתוביות בעברית, ומקורות סטרימינג.
+                                        ╫פ╫¬╫ץ╫í╫ñ╫ש╫¥ ╫¢╫ץ╫£╫£╫ש╫¥: ╫º╫ר╫£╫ץ╫ע╫ש╫¥, ╫¢╫¬╫ץ╫ס╫ש╫ץ╫¬ ╫ס╫ó╫ס╫¿╫ש╫¬, ╫ץ╫₧╫º╫ץ╫¿╫ץ╫¬ ╫í╫ר╫¿╫ש╫₧╫ש╫á╫ע.
                                     </div>
                                 </div>
-                                <Checkbox
-                                    label={'הסר תוספים קיימים לפני ההתקנה (מומלץ)'}
-                                    checked={cleanInstallSelected}
-                                    onChange={toggleCleanInstall}
-                                />
                             </>
                         }
+                    </ModalDialog>
+                    :
+                    null
+            }
+            {
+                installChoiceModalOpen ?
+                    <ModalDialog
+                        className={styles['install-all-modal-container']}
+                        title={'Choose installation type'}
+                        buttons={[
+                            {
+                                className: styles['cancel-button'],
+                                label: t('BUTTON_CANCEL'),
+                                props: {
+                                    onClick: closeInstallChoiceModal,
+                                    disabled: installingAll
+                                }
+                            },
+                            {
+                                className: styles['confirm-button'],
+                                label: 'Keep existing addons',
+                                props: {
+                                    onClick: () => handleInstallChoice('keep'),
+                                    disabled: installingAll
+                                }
+                            },
+                            {
+                                className: styles['confirm-button'],
+                                label: 'Clean install (remove addons)',
+                                props: {
+                                    onClick: () => handleInstallChoice('remove'),
+                                    disabled: installingAll
+                                }
+                            }
+                        ]}
+                        onCloseRequest={closeInstallChoiceModal}>
+                        <div className={styles['notice']}>
+                            Choose whether to keep your existing addons or remove them before installing the default set.
+                        </div>
                     </ModalDialog>
                     :
                     null
@@ -472,3 +506,6 @@ const AddonsFallback = () => (
 );
 
 module.exports = withCoreSuspender(Addons, AddonsFallback);
+
+
+
