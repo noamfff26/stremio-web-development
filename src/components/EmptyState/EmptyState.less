@@ -1,0 +1,399 @@
+// Copyright (C) 2024 Stremio UI/UX Enhancement
+// Enhanced Empty State Styles with Accessibility and Modern Design
+
+@import (reference) '~stremio/common/design-tokens.less';
+@import (reference) '~stremio/common/enhanced-animations.less';
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: @spacing-8;
+    border-radius: @radius-xl;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.03) 0%,
+        rgba(255, 255, 255, 0.01) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    
+    // Enhanced transitions
+    transition: all @transition-slow;
+    transform: translateY(0);
+    
+    // Focus styles with WCAG compliance
+    outline: none;
+    cursor: default;
+    
+    &:focus-visible {
+        outline: @focus-ring-width solid @focus-ring-color;
+        outline-offset: @focus-ring-offset;
+        box-shadow: 0 0 0 @focus-ring-offset rgba(@color-primary-500, 0.2);
+    }
+    
+    // Hover effects for actionable empty states
+    &:hover:not(:focus) {
+        transform: translateY(-2px);
+        box-shadow: @shadow-lg;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.04) 0%,
+            rgba(255, 255, 255, 0.02) 100%
+        );
+    }
+    
+    // Variants
+    &.default {
+        padding: @spacing-8;
+    }
+    
+    &.compact {
+        padding: @spacing-6;
+    }
+    
+    &.large {
+        padding: @spacing-12;
+    }
+}
+
+// Icon container with enhanced styling
+.icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: @spacing-4;
+    border-radius: 50%;
+    background: linear-gradient(
+        135deg,
+        @color-primary-500 0%,
+        @color-primary-600 100%
+    );
+    box-shadow: @glow-primary;
+    
+    // Animation
+    animation: fadeInUp 400ms ease-out;
+    
+    .icon {
+        width: 32px;
+        height: 32px;
+        font-size: 32px;
+        color: white;
+    }
+}
+
+// Title with enhanced typography
+.title {
+    margin: 0 0 @spacing-3 0;
+    font-size: @font-size-xl;
+    font-weight: @font-weight-semibold;
+    color: @color-text-primary;
+    line-height: @line-height-tight;
+    
+    // Animation
+    animation: fadeInUp 400ms ease-out 100ms both;
+}
+
+// Description with better readability
+.description {
+    margin: 0 0 @spacing-6 0;
+    font-size: @font-size-base;
+    color: @color-text-secondary;
+    line-height: @line-height-relaxed;
+    max-width: 400px;
+    
+    // Animation
+    animation: fadeInUp 400ms ease-out 200ms both;
+}
+
+// Content area for additional elements
+.content {
+    margin: @spacing-4 0;
+    
+    // Animation
+    animation: fadeInUp 400ms ease-out 300ms both;
+}
+
+// Action button with enhanced styling
+.action-button {
+    margin-top: @spacing-6;
+    
+    // Animation
+    animation: fadeInUp 400ms ease-out 400ms both;
+}
+
+// Size variants
+.empty-state.small {
+    .icon-container {
+        width: 48px;
+        height: 48px;
+        
+        .icon {
+            width: 24px;
+            height: 24px;
+            font-size: 24px;
+        }
+    }
+    
+    .title {
+        font-size: @font-size-lg;
+        margin-bottom: @spacing-2;
+    }
+    
+    .description {
+        font-size: @font-size-sm;
+        margin-bottom: @spacing-4;
+    }
+}
+
+.empty-state.large {
+    .icon-container {
+        width: 80px;
+        height: 80px;
+        margin-bottom: @spacing-6;
+        
+        .icon {
+            width: 40px;
+            height: 40px;
+            font-size: 40px;
+        }
+    }
+    
+    .title {
+        font-size: @font-size-2xl;
+        margin-bottom: @spacing-4;
+    }
+    
+    .description {
+        font-size: @font-size-lg;
+        margin-bottom: @spacing-8;
+        max-width: 500px;
+    }
+}
+
+// Themed variants
+.empty-state.success {
+    .icon-container {
+        background: linear-gradient(
+            135deg,
+            @color-success-500 0%,
+            @color-success-600 100%
+        );
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+    }
+}
+
+.empty-state.warning {
+    .icon-container {
+        background: linear-gradient(
+            135deg,
+            @color-warning-500 0%,
+            @color-warning-600 100%
+        );
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    }
+}
+
+.empty-state.error {
+    .icon-container {
+        background: linear-gradient(
+            135deg,
+            @color-error-500 0%,
+            @color-error-600 100%
+        );
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    }
+}
+
+// Grid layout for multiple empty states
+.empty-state-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: @spacing-6;
+    
+    .empty-state {
+        height: 100%;
+    }
+}
+
+// Card-style empty state
+.empty-state.card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: @shadow-md;
+    
+    &:hover {
+        box-shadow: @shadow-lg;
+        transform: translateY(-4px);
+    }
+}
+
+// Inline empty state
+.empty-state.inline {
+    flex-direction: row;
+    text-align: left;
+    padding: @spacing-4;
+    
+    .icon-container {
+        margin: 0 @spacing-4 0 0;
+        flex-shrink: 0;
+    }
+    
+    .title,
+    .description {
+        text-align: left;
+        margin-right: auto;
+    }
+    
+    .action-button {
+        margin: 0 0 0 @spacing-4;
+    }
+}
+
+// Animation keyframes
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Responsive design
+@media only screen and (max-width: 768px) {
+    .empty-state {
+        padding: @spacing-6;
+        
+        &.large {
+            padding: @spacing-8;
+        }
+        
+        .icon-container {
+            width: 56px;
+            height: 56px;
+            
+            .icon {
+                width: 28px;
+                height: 28px;
+                font-size: 28px;
+            }
+        }
+        
+        .title {
+            font-size: @font-size-lg;
+        }
+        
+        .description {
+            font-size: @font-size-sm;
+        }
+    }
+    
+    .empty-state.inline {
+        flex-direction: column;
+        text-align: center;
+        
+        .icon-container {
+            margin: 0 0 @spacing-3 0;
+        }
+        
+        .title,
+        .description {
+            text-align: center;
+            margin-right: 0;
+        }
+        
+        .action-button {
+            margin: @spacing-4 0 0 0;
+        }
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    .empty-state {
+        padding: @spacing-4;
+        
+        &.large {
+            padding: @spacing-6;
+        }
+        
+        .icon-container {
+            width: 48px;
+            height: 48px;
+            margin-bottom: @spacing-3;
+            
+            .icon {
+                width: 24px;
+                height: 24px;
+                font-size: 24px;
+            }
+        }
+        
+        .title {
+            font-size: @font-size-base;
+            margin-bottom: @spacing-2;
+        }
+        
+        .description {
+            font-size: @font-size-sm;
+            margin-bottom: @spacing-4;
+        }
+    }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+    .empty-state {
+        border-width: 2px;
+        
+        &:focus-visible {
+            outline-width: 4px;
+            outline-offset: 3px;
+        }
+        
+        .icon-container {
+            border: 2px solid white;
+        }
+    }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+    .empty-state,
+    .empty-state:hover:not(:focus),
+    .icon-container,
+    .title,
+    .description,
+    .content,
+    .action-button {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+// Dark theme adjustments
+@media (prefers-color-scheme: light) {
+    .empty-state {
+        background: linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.02) 0%,
+            rgba(0, 0, 0, 0.01) 100%
+        );
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        
+        &:hover:not(:focus) {
+            background: linear-gradient(
+                135deg,
+                rgba(0, 0, 0, 0.03) 0%,
+                rgba(0, 0, 0, 0.02) 100%
+            );
+        }
+    }
+}

@@ -1,0 +1,290 @@
+// Copyright (C) 2024 Stremio UI/UX Enhancement
+// Enhanced Button Component with Accessibility and Modern Design
+
+@import (reference) '~stremio/common/design-tokens.less';
+
+.button-container {
+    // Base styles with enhanced accessibility
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: @spacing-2;
+    padding: @button-padding-y @button-padding-x;
+    font-family: @font-family-primary;
+    font-size: @font-size-sm;
+    font-weight: @button-font-weight;
+    line-height: @line-height-tight;
+    color: @color-text-primary;
+    background: linear-gradient(135deg, @color-primary-500 0%, @color-primary-600 100%);
+    border: 1px solid transparent;
+    border-radius: @button-border-radius;
+    cursor: pointer;
+    user-select: none;
+    text-decoration: none;
+    white-space: nowrap;
+    vertical-align: middle;
+    
+    // Enhanced transitions
+    transition: all @button-transition;
+    transform: translateY(0);
+    
+    // Focus styles with WCAG compliance
+    outline: none;
+    
+    &:focus-visible {
+        outline: @focus-ring-width solid @focus-ring-color;
+        outline-offset: @focus-ring-offset;
+        box-shadow: 0 0 0 @focus-ring-offset rgba(@color-primary-500, 0.2);
+    }
+    
+    // Hover effects
+    &:hover:not(:disabled):not(.loading) {
+        background: linear-gradient(135deg, @color-primary-600 0%, @color-primary-700 100%);
+        transform: translateY(-2px);
+        box-shadow: @shadow-lg;
+    }
+    
+    // Active state
+    &:active:not(:disabled):not(.loading) {
+        transform: translateY(0);
+        box-shadow: @shadow-base;
+    }
+    
+    // Ripple effect container
+    overflow: hidden;
+    
+    // Ripple animation
+    &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 600ms ease-out, height 600ms ease-out;
+        pointer-events: none;
+    }
+    
+    &:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    // Disabled state
+    &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    // Loading state
+    &.loading {
+        pointer-events: none;
+        position: relative;
+        color: transparent;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid @color-neutral-100;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: button-spinner 0.8s linear infinite;
+        }
+    }
+}
+
+// Button variants
+.button-primary {
+    .button-container;
+    background: linear-gradient(135deg, @color-primary-500 0%, @color-primary-600 100%);
+    
+    &:hover:not(:disabled):not(.loading) {
+        background: linear-gradient(135deg, @color-primary-600 0%, @color-primary-700 100%);
+    }
+}
+
+.button-secondary {
+    .button-container;
+    background: transparent;
+    color: @color-text-primary;
+    border: 1px solid @color-neutral-600;
+    
+    &:hover:not(:disabled):not(.loading) {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: @color-neutral-500;
+    }
+}
+
+.button-success {
+    .button-container;
+    background: linear-gradient(135deg, @color-success-500 0%, @color-success-600 100%);
+    
+    &:hover:not(:disabled):not(.loading) {
+        background: linear-gradient(135deg, @color-success-600 0%, @color-success-700 100%);
+    }
+}
+
+.button-warning {
+    .button-container;
+    background: linear-gradient(135deg, @color-warning-500 0%, @color-warning-600 100%);
+    color: @color-text-inverse;
+    
+    &:hover:not(:disabled):not(.loading) {
+        background: linear-gradient(135deg, @color-warning-600 0%, @color-warning-700 100%);
+    }
+}
+
+.button-error {
+    .button-container;
+    background: linear-gradient(135deg, @color-error-500 0%, @color-error-600 100%);
+    
+    &:hover:not(:disabled):not(.loading) {
+        background: linear-gradient(135deg, @color-error-600 0%, @color-error-700 100%);
+    }
+}
+
+.button-ghost {
+    .button-container;
+    background: transparent;
+    color: @color-text-secondary;
+    border: 1px solid transparent;
+    
+    &:hover:not(:disabled):not(.loading) {
+        background: rgba(255, 255, 255, 0.05);
+        color: @color-text-primary;
+    }
+}
+
+// Button sizes
+.button-sm {
+    padding: @spacing-1 @spacing-3;
+    font-size: @font-size-xs;
+    min-height: @min-touch-target-sm;
+}
+
+.button-md {
+    padding: @spacing-2 @spacing-4;
+    font-size: @font-size-sm;
+    min-height: @min-touch-target;
+}
+
+.button-lg {
+    padding: @spacing-3 @spacing-6;
+    font-size: @font-size-base;
+    min-height: 48px;
+}
+
+.button-xl {
+    padding: @spacing-4 @spacing-8;
+    font-size: @font-size-lg;
+    min-height: 56px;
+}
+
+// Icon button
+.button-icon {
+    .button-container;
+    padding: @spacing-2;
+    min-width: @min-touch-target;
+    min-height: @min-touch-target;
+    
+    &.button-sm {
+        padding: @spacing-1;
+        min-width: @min-touch-target-sm;
+        min-height: @min-touch-target-sm;
+    }
+}
+
+// Full width button
+.button-full-width {
+    width: 100%;
+    justify-content: center;
+}
+
+// Button group
+.button-group {
+    display: inline-flex;
+    border-radius: @button-border-radius;
+    overflow: hidden;
+    
+    .button-container {
+        border-radius: 0;
+        margin-right: -1px;
+        
+        &:first-child {
+            border-top-left-radius: @button-border-radius;
+            border-bottom-left-radius: @button-border-radius;
+        }
+        
+        &:last-child {
+            border-top-right-radius: @button-border-radius;
+            border-bottom-right-radius: @button-border-radius;
+            margin-right: 0;
+        }
+        
+        &:hover {
+            z-index: 1;
+        }
+    }
+}
+
+// Loading spinner animation
+@keyframes button-spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Accessibility improvements for screen readers
+.button-container[aria-busy="true"]::after {
+    content: '';
+    animation: button-spinner 0.8s linear infinite;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+    .button-container {
+        border-width: 2px;
+        
+        &:focus-visible {
+            outline-width: 4px;
+            outline-offset: 3px;
+        }
+    }
+}
+
+// Touch device optimizations
+@media (hover: none) and (pointer: coarse) {
+    .button-container {
+        min-height: @min-touch-target;
+        
+        &:hover:not(:disabled):not(.loading) {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        &:active:not(:disabled):not(.loading) {
+            background: linear-gradient(135deg, @color-primary-600 0%, @color-primary-700 100%);
+            transform: scale(0.98);
+        }
+    }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+    .button-container,
+    .button-container::before {
+        transition: none !important;
+        animation: none !important;
+    }
+}

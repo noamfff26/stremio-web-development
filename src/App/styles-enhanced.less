@@ -1,0 +1,787 @@
+// Copyright (C) 2024 Stremio UI/UX Enhancement
+// Enhanced Main App Styles with Modern Design System and Accessibility
+
+@import (reference) '~stremio/common/screen-sizes.less';
+@import (reference) '~stremio/common/design-tokens.less';
+@import (reference) '~stremio/common/enhanced-colors.less';
+@import (reference) '~stremio/common/enhanced-animations.less';
+
+@font-face {
+    font-family: 'PlusJakartaSans';
+    src: url('/fonts/PlusJakartaSans.ttf') format('truetype');
+    font-display: swap; // Performance optimization
+}
+
+:global {
+    @import (once, less) '~stremio/common/animations.less';
+    @import (once, less) '~stremio-router/styles.css';
+}
+
+// iOS Safe Area Calculations
+@calculated-bottom-safe-inset: ~"min(env(safe-area-inset-bottom, 0rem), max(1rem, calc(var(--viewport-height-diff) - env(safe-area-inset-top, 0rem))))";
+
+// Viewport and Layout Variables
+@viewport-width: ~"100vw";
+@viewport-height: ~"100vh";
+
+@html-width: ~"calc(max(var(--small-viewport-width), var(--dynamic-viewport-width)))";
+@html-height: ~"calc(max(var(--small-viewport-height), var(--dynamic-viewport-height)))";
+@html-standalone-width: ~"calc(max(100%, var(--small-viewport-width)))";
+@html-standalone-height: ~"calc(max(100%, var(--small-viewport-height)))";
+
+@safe-area-inset-top: env(safe-area-inset-top, 0rem);
+@safe-area-inset-right: env(safe-area-inset-right, 0rem);
+@safe-area-inset-bottom: env(safe-area-inset-bottom, 0rem);
+@safe-area-inset-left: env(safe-area-inset-left, 0rem);
+
+@top-overlay-size: 5.25rem;
+@bottom-overlay-size: 0rem;
+@overlap-size: 3rem;
+@transparency-gradient-pad: 6rem;
+
+// Enhanced CSS Custom Properties with Design Tokens
+:root {
+    // Layout and Sizing
+    --landscape-shape-ratio: 0.5625;
+    --poster-shape-ratio: 1.464;
+    --scroll-bar-size: 6px;
+    --horizontal-nav-bar-size: 5.5rem;
+    --vertical-nav-bar-size: 6rem;
+    --focus-outline-size: 3px; // Enhanced for WCAG compliance
+    
+    // Brand Colors
+    --color-facebook: #1877F1;
+    --color-x: #000000;
+    --color-reddit: #FF4500;
+    --color-imdb: #f5c518;
+    --color-trakt: rgb(255, 255, 255);
+    
+    // Enhanced Color System
+    --color-placeholder: #60606080;
+    --color-placeholder-text: @color-neutral-300;
+    --color-placeholder-background: rgba(255, 255, 255, 0.05);
+    
+    // Enhanced Background Colors with better contrast
+    --primary-background-color: @color-background-primary;
+    --secondary-background-color: @color-background-secondary;
+    --primary-foreground-color: @color-text-primary;
+    --secondary-foreground-color: @color-text-inverse;
+    --primary-accent-color: @color-primary-500;
+    --secondary-accent-color: @color-secondary-500;
+    --tertiary-accent-color: rgba(246, 199, 0, 1);
+    --quaternary-accent-color: rgba(18, 69, 166, 1);
+    --overlay-color: @color-background-overlay;
+    --modal-background-color: @color-background-modal;
+    --outer-glow: @glow-primary;
+    --warning-accent-color: @color-warning-500;
+    --danger-accent-color: @color-error-500;
+    
+    // Enhanced Border Radius System
+    --border-radius: @radius-lg;
+    --border-radius-sm: @radius-sm;
+    --border-radius-md: @radius-base;
+    --border-radius-lg: @radius-lg;
+    --border-radius-xl: @radius-xl;
+    
+    // Enhanced Shadows
+    --shadow-sm: @shadow-sm;
+    --shadow-base: @shadow-base;
+    --shadow-md: @shadow-md;
+    --shadow-lg: @shadow-lg;
+    --shadow-xl: @shadow-xl;
+    
+    // Layout and Spacing
+    --top-overlay-size: @top-overlay-size;
+    --bottom-overlay-size: @bottom-overlay-size;
+    --overlap-size: @overlap-size;
+    --transparency-gradient-pad: @transparency-gradient-pad;
+    
+    // Safe Areas
+    --safe-area-inset-top: @safe-area-inset-top;
+    --safe-area-inset-right: @safe-area-inset-right;
+    --safe-area-inset-bottom: @safe-area-inset-bottom;
+    --safe-area-inset-left: @safe-area-inset-left;
+    
+    // Viewport Variables
+    --dynamic-viewport-width: @viewport-width;
+    --dynamic-viewport-height: @viewport-height;
+    --large-viewport-width: @viewport-width;
+    --large-viewport-height: @viewport-height;
+    --small-viewport-width: @viewport-width;
+    --small-viewport-height: @viewport-height;
+    --viewport-height-diff: calc(100vh - 100vh);
+    
+    // Enhanced Typography
+    --font-family-primary: @font-family-primary;
+    --font-size-xs: @font-size-xs;
+    --font-size-sm: @font-size-sm;
+    --font-size-base: @font-size-base;
+    --font-size-lg: @font-size-lg;
+    --font-size-xl: @font-size-xl;
+    --font-size-2xl: @font-size-2xl;
+    --font-size-3xl: @font-size-3xl;
+    
+    // Enhanced Transitions
+    --transition-fast: @transition-fast;
+    --transition-base: @transition-base;
+    --transition-slow: @transition-slow;
+    --transition-slower: @transition-slower;
+    
+    // Enhanced Z-Index System
+    --z-index-dropdown: @z-index-dropdown;
+    --z-index-sticky: @z-index-sticky;
+    --z-index-fixed: @z-index-fixed;
+    --z-index-modal-backdrop: @z-index-modal-backdrop;
+    --z-index-modal: @z-index-modal;
+    --z-index-popover: @z-index-popover;
+    --z-index-tooltip: @z-index-tooltip;
+    --z-index-toast: @z-index-toast;
+    
+    // Accessibility Variables
+    --focus-ring-width: @focus-ring-width;
+    --focus-ring-offset: @focus-ring-offset;
+    --focus-ring-color: @focus-ring-color;
+    --min-touch-target: @min-touch-target;
+    --min-touch-target-sm: @min-touch-target-sm;
+    
+    // Enhanced Color Palette
+    --color-surface-50: @color-neutral-50;
+    --color-surface-100: @color-neutral-100;
+    --color-surface-200: @color-neutral-200;
+    --color-surface-300: @color-neutral-300;
+    --color-surface-400: @color-neutral-400;
+    --color-surface-500: @color-neutral-500;
+    --color-surface-600: @color-neutral-600;
+    --color-surface-700: @color-neutral-700;
+    --color-surface-800: @color-neutral-800;
+    --color-surface-900: @color-neutral-900;
+    
+    // Enhanced Accent Colors
+    --color-accent-primary: @color-primary-500;
+    --color-accent-secondary: @color-secondary-500;
+    --color-accent-success: @color-success-500;
+    --color-accent-warning: @color-warning-500;
+    --color-accent-error: @color-error-500;
+    --color-accent-info: @color-info-500;
+    
+    // Enhanced Interactive Colors
+    --color-interactive-primary: @color-primary-500;
+    --color-interactive-primary-hover: @color-primary-600;
+    --color-interactive-primary-active: @color-primary-700;
+    --color-interactive-secondary: @color-secondary-500;
+    --color-interactive-secondary-hover: @color-secondary-600;
+    --color-interactive-secondary-active: @color-secondary-700;
+    
+    // Enhanced Focus Colors
+    --color-focus-primary: @color-primary-500;
+    --color-focus-secondary: @color-secondary-500;
+    --color-focus-error: @color-error-500;
+    --color-focus-warning: @color-warning-500;
+    --color-focus-info: @color-info-500;
+    
+    // Enhanced Status Colors
+    --color-status-online: @color-success-500;
+    --color-status-offline: @color-neutral-500;
+    --color-status-away: @color-warning-500;
+    --color-status-busy: @color-error-500;
+    --color-status-invisible: @color-neutral-400;
+    
+    // Enhanced Rating Colors
+    --color-rating-excellent: @color-success-500;
+    --color-rating-good: @color-info-500;
+    --color-rating-average: @color-warning-500;
+    --color-rating-poor: @color-error-500;
+    --color-rating-terrible: @color-error-600;
+    
+    // Enhanced Gradient Colors
+    --color-gradient-primary: @color-gradient-primary;
+    --color-gradient-secondary: @color-gradient-secondary;
+    --color-gradient-error: @color-gradient-error;
+    --color-gradient-warning: @color-gradient-warning;
+    --color-gradient-info: @color-gradient-info;
+    --color-gradient-background: @color-gradient-background;
+    
+    // Enhanced Overlay Colors
+    --color-overlay-light: @color-overlay-light;
+    --color-overlay-medium: @color-overlay-medium;
+    --color-overlay-dark: @color-overlay-dark;
+    --color-overlay-darker: @color-overlay-darker;
+    
+    // Enhanced Shadow Colors
+    --color-shadow-light: @color-shadow-light;
+    --color-shadow-medium: @color-shadow-medium;
+    --color-shadow-dark: @color-shadow-dark;
+    --color-shadow-darker: @color-shadow-darker;
+    
+    // Enhanced Glow Colors
+    --color-glow-primary: @glow-primary;
+    --color-glow-secondary: @glow-secondary;
+    --color-glow-warning: @glow-warning;
+    --color-glow-error: @glow-error;
+    
+    // Enhanced Border Colors
+    --color-border-primary: @color-border-primary;
+    --color-border-secondary: @color-border-secondary;
+    --color-border-tertiary: @color-border-tertiary;
+    --color-border-focus: @color-border-focus;
+    --color-border-error: @color-border-error;
+    --color-border-success: @color-border-success;
+    --color-border-warning: @color-border-warning;
+    
+    // Enhanced Text Colors
+    --color-text-primary: @color-text-primary;
+    --color-text-secondary: @color-text-secondary;
+    --color-text-tertiary: @color-text-tertiary;
+    --color-text-disabled: @color-text-disabled;
+    --color-text-inverse: @color-text-inverse;
+    
+    // Enhanced Background Colors
+    --color-background-primary: @color-background-primary;
+    --color-background-secondary: @color-background-secondary;
+    --color-background-tertiary: @color-background-tertiary;
+    --color-background-modal: @color-background-modal;
+    --color-background-overlay: @color-background-overlay;
+    
+    // Enhanced Semantic Colors
+    --color-semantic-success: @color-success-500;
+    --color-semantic-success-light: @color-success-50;
+    --color-semantic-warning: @color-warning-500;
+    --color-semantic-warning-light: @color-warning-50;
+    --color-semantic-error: @color-error-500;
+    --color-semantic-error-light: @color-error-50;
+    --color-semantic-info: @color-info-500;
+    --color-semantic-info-light: @color-info-50;
+    
+    // Enhanced Neutral Colors
+    --color-neutral-0: @color-neutral-0;
+    --color-neutral-50: @color-neutral-50;
+    --color-neutral-100: @color-neutral-100;
+    --color-neutral-200: @color-neutral-200;
+    --color-neutral-300: @color-neutral-300;
+    --color-neutral-400: @color-neutral-400;
+    --color-neutral-500: @color-neutral-500;
+    --color-neutral-600: @color-neutral-600;
+    --color-neutral-700: @color-neutral-700;
+    --color-neutral-800: @color-neutral-800;
+    --color-neutral-900: @color-neutral-900;
+    --color-neutral-950: @color-neutral-950;
+    
+    // Enhanced Primary Colors
+    --color-primary-50: @color-primary-50;
+    --color-primary-100: @color-primary-100;
+    --color-primary-200: @color-primary-200;
+    --color-primary-300: @color-primary-300;
+    --color-primary-400: @color-primary-400;
+    --color-primary-500: @color-primary-500;
+    --color-primary-600: @color-primary-600;
+    --color-primary-700: @color-primary-700;
+    --color-primary-800: @color-primary-800;
+    --color-primary-900: @color-primary-900;
+    
+    // Enhanced Secondary Colors
+    --color-secondary-50: @color-secondary-50;
+    --color-secondary-100: @color-secondary-100;
+    --color-secondary-200: @color-secondary-200;
+    --color-secondary-300: @color-secondary-300;
+    --color-secondary-400: @color-secondary-400;
+    --color-secondary-500: @color-secondary-500;
+    --color-secondary-600: @color-secondary-600;
+    --color-secondary-700: @color-secondary-700;
+    --color-secondary-800: @color-secondary-800;
+    --color-secondary-900: @color-secondary-900;
+    
+    // Enhanced Spacing Scale
+    --spacing-0: @spacing-0;
+    --spacing-1: @spacing-1;
+    --spacing-2: @spacing-2;
+    --spacing-3: @spacing-3;
+    --spacing-4: @spacing-4;
+    --spacing-5: @spacing-5;
+    --spacing-6: @spacing-6;
+    --spacing-8: @spacing-8;
+    --spacing-10: @spacing-10;
+    --spacing-12: @spacing-12;
+    --spacing-16: @spacing-16;
+    --spacing-20: @spacing-20;
+    --spacing-24: @spacing-24;
+    
+    // Enhanced Typography Scale
+    --font-family-primary: @font-family-primary;
+    --font-family-mono: @font-family-mono;
+    --font-size-xs: @font-size-xs;
+    --font-size-sm: @font-size-sm;
+    --font-size-base: @font-size-base;
+    --font-size-lg: @font-size-lg;
+    --font-size-xl: @font-size-xl;
+    --font-size-2xl: @font-size-2xl;
+    --font-size-3xl: @font-size-3xl;
+    --font-size-4xl: @font-size-4xl;
+    --font-size-5xl: @font-size-5xl;
+    
+    // Enhanced Font Weights
+    --font-weight-normal: @font-weight-normal;
+    --font-weight-medium: @font-weight-medium;
+    --font-weight-semibold: @font-weight-semibold;
+    --font-weight-bold: @font-weight-bold;
+    
+    // Enhanced Line Heights
+    --line-height-tight: @line-height-tight;
+    --line-height-normal: @line-height-normal;
+    --line-height-relaxed: @line-height-relaxed;
+    
+    // Enhanced Component Tokens
+    --button-padding-x: @button-padding-x;
+    --button-padding-y: @button-padding-y;
+    --button-font-weight: @button-font-weight;
+    --button-border-radius: @button-border-radius;
+    --button-transition: @button-transition;
+    
+    --input-padding-x: @input-padding-x;
+    --input-padding-y: @input-padding-y;
+    --input-border-radius: @input-border-radius;
+    --input-border-width: @input-border-width;
+    --input-focus-ring-width: @input-focus-ring-width;
+    
+    --card-padding: @card-padding;
+    --card-border-radius: @card-border-radius;
+    --card-shadow: @card-shadow;
+    
+    --modal-padding: @modal-padding;
+    --modal-border-radius: @modal-border-radius;
+    --modal-shadow: @modal-shadow;
+    --modal-backdrop-opacity: @modal-backdrop-opacity;
+    
+    // Enhanced Accessibility Variables
+    --focus-ring-width: @focus-ring-width;
+    --focus-ring-offset: @focus-ring-offset;
+    --focus-ring-color: @focus-ring-color;
+    --min-touch-target: @min-touch-target;
+    --min-touch-target-sm: @min-touch-target-sm;
+    --contrast-ratio-normal: @contrast-ratio-normal;
+    --contrast-ratio-large: @contrast-ratio-large;
+    --reduced-motion-transition: @reduced-motion-transition;
+    --reduced-motion-animation: @reduced-motion-animation;
+    
+    // Enhanced Breakpoints
+    --breakpoint-sm: @breakpoint-sm;
+    --breakpoint-md: @breakpoint-md;
+    --breakpoint-lg: @breakpoint-lg;
+    --breakpoint-xl: @breakpoint-xl;
+    --breakpoint-2xl: @breakpoint-2xl;
+}
+
+// Enhanced viewport support
+@supports (height: 100dvh) {
+    :root {
+        --dynamic-viewport-width: 100dvw;
+        --dynamic-viewport-height: 100dvh;
+    }
+}
+
+@supports (height: 100lvh) {
+    :root {
+        --large-viewport-width: 100lvw;
+        --large-viewport-height: 100lvh;
+    }
+}
+
+@supports (height: 100svh) {
+    :root {
+        --small-viewport-width: 100svw;
+        --small-viewport-height: 100svh;
+    }
+}
+
+@supports (height: 100lvh) and (height: 100svh) {
+    :root {
+        --viewport-height-diff: calc(100lvh - 100svh);
+    }
+}
+
+@media (display-mode: standalone) {
+    :root {
+        --safe-area-inset-bottom: @calculated-bottom-safe-inset;
+    }
+}
+
+// Enhanced Global Reset with Accessibility
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 1rem;
+    font-family: inherit;
+    border: none;
+    outline: none;
+    list-style: none;
+    user-select: none;
+    text-decoration: none;
+    appearance: none;
+    background: none;
+    box-shadow: none;
+    overflow: hidden;
+    word-break: break-word;
+    scrollbar-width: thin;
+    scrollbar-color: var(--overlay-color) transparent;
+    
+    // Enhanced focus styles
+    &:focus-visible {
+        outline: var(--focus-ring-width) solid var(--focus-ring-color);
+        outline-offset: var(--focus-ring-offset);
+        box-shadow: 0 0 0 var(--focus-ring-offset) rgba(var(--color-primary-500), 0.2);
+    }
+}
+
+// Enhanced Scrollbar Styling
+::-webkit-scrollbar {
+    width: var(--scroll-bar-size);
+    height: var(--scroll-bar-size);
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: var(--scroll-bar-size);
+    background-color: var(--overlay-color);
+    transition: background-color var(--transition-fast);
+    
+    &:hover {
+        background-color: var(--primary-accent-color);
+    }
+    
+    &:active {
+        background-color: var(--color-interactive-primary-active);
+    }
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+// Enhanced SVG Styling
+svg {
+    overflow: visible;
+}
+
+// Enhanced HTML and Body Styling
+html {
+    width: @html-width;
+    height: @html-height;
+    font-family: var(--font-family-primary);
+    overflow: auto;
+    overscroll-behavior: none;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    font-size: 16px; // Enhanced base font size for better readability
+    line-height: var(--line-height-normal);
+    
+    // Enhanced font rendering
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    
+    @media (display-mode: standalone) {
+        width: @html-standalone-width;
+        height: @html-standalone-height;
+    }
+    
+    body {
+        width: 100%;
+        height: 100%;
+        background: var(--color-gradient-background);
+        -webkit-font-smoothing: antialiased;
+        
+        // Enhanced color scheme support
+        color-scheme: dark;
+        
+        // Enhanced selection styles
+        &::selection {
+            background-color: var(--color-interactive-primary);
+            color: white;
+        }
+        
+        // Enhanced focus outline styles
+        *:focus-visible {
+            outline: var(--focus-ring-width) solid var(--focus-ring-color);
+            outline-offset: var(--focus-ring-offset);
+            box-shadow: 0 0 0 var(--focus-ring-offset) rgba(var(--color-primary-500), 0.2);
+        }
+        
+        // Skip link for accessibility
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: var(--color-interactive-primary);
+            color: white;
+            padding: var(--spacing-2) var(--spacing-4);
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            z-index: var(--z-index-tooltip);
+            transition: top var(--transition-base);
+            
+            &:focus {
+                top: 6px;
+                outline: var(--focus-ring-width) solid white;
+                outline-offset: var(--focus-ring-offset);
+            }
+        }
+        
+        // Enhanced main app container
+        :global(#app) {
+            position: relative;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            
+            // Enhanced toasts container
+            .toasts-container {
+                position: absolute;
+                top: calc(1.2 * var(--horizontal-nav-bar-size) + var(--safe-area-inset-top));
+                right: var(--safe-area-inset-right);
+                bottom: calc(1.2 * var(--horizontal-nav-bar-size) + var(--safe-area-inset-bottom, 0rem));
+                left: auto;
+                z-index: var(--z-index-toast);
+                padding: 0 calc(0.5 * var(--horizontal-nav-bar-size));
+                overflow: visible;
+                scrollbar-width: none;
+                pointer-events: none;
+                
+                &::-webkit-scrollbar {
+                    display: none;
+                }
+            }
+            
+            // Enhanced tooltip container
+            .tooltip-container {
+                height: 2.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 var(--spacing-6);
+                font-size: var(--font-size-base);
+                color: var(--primary-foreground-color);
+                border-radius: var(--border-radius);
+                background-color: var(--modal-background-color);
+                box-shadow: var(--outer-glow);
+                transition: opacity var(--transition-fast) ease-out;
+                backdrop-filter: blur(10px);
+            }
+            
+            // Enhanced file drop container
+            .file-drop-container {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: var(--border-radius-lg);
+                border: 0.5rem dashed transparent;
+                pointer-events: none;
+                transition: border-color var(--transition-base) ease-out;
+                
+                &:global(.active) {
+                    border-color: var(--primary-accent-color);
+                    background-color: rgba(var(--primary-accent-color), 0.1);
+                }
+            }
+            
+            // Enhanced updater banner container
+            .updater-banner-container {
+                z-index: var(--z-index-fixed);
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+            
+            // Enhanced router container
+            .router {
+                width: 100%;
+                height: 100%;
+            }
+            
+            // Enhanced loader and error containers
+            .loader-container, .error-container {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                gap: var(--spacing-4);
+            }
+        }
+    }
+}
+
+// Enhanced Responsive Typography
+@media only screen and (min-width: 1536px) {
+    html {
+        font-size: 18px;
+    }
+}
+
+@media only screen and (min-width: 1280px) and (max-width: 1535px) {
+    html {
+        font-size: 17px;
+    }
+}
+
+@media only screen and (min-width: 1024px) and (max-width: 1279px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1023px) {
+    html {
+        font-size: 15px;
+    }
+}
+
+@media only screen and (min-width: 640px) and (max-width: 767px) {
+    html {
+        font-size: 14px;
+    }
+}
+
+@media only screen and (max-width: 639px) {
+    html {
+        font-size: 14px;
+        
+        body {
+            :global(#app) {
+                .toasts-container {
+                    padding: 0 var(--spacing-4);
+                    top: calc(var(--horizontal-nav-bar-size) + var(--safe-area-inset-top));
+                    bottom: calc(var(--horizontal-nav-bar-size) + var(--safe-area-inset-bottom, 0rem));
+                }
+                
+                .tooltip-container {
+                    display: none; // Hide tooltips on very small screens
+                }
+            }
+        }
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    html {
+        font-size: 13px;
+        
+        body {
+            :global(#app) {
+                .toasts-container {
+                    padding: 0 var(--spacing-2);
+                }
+            }
+        }
+    }
+}
+
+@media only screen and (max-width: @minimum) {
+    :root {
+        --bottom-overlay-size: 6rem;
+    }
+}
+
+// Enhanced High Contrast Mode Support
+@media (prefers-contrast: high) {
+    :root {
+        --focus-outline-size: 4px;
+        --focus-ring-width: 4px;
+        --focus-ring-offset: 3px;
+    }
+    
+    *:focus-visible {
+        outline: var(--focus-ring-width) solid var(--focus-ring-color);
+        outline-offset: var(--focus-ring-offset);
+    }
+}
+
+// Enhanced Reduced Motion Support
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+// Enhanced Touch Device Optimizations
+@media (hover: none) and (pointer: coarse) {
+    :root {
+        --min-touch-target: 44px;
+        --min-touch-target-sm: 40px;
+    }
+    
+    * {
+        cursor: default;
+    }
+}
+
+// Enhanced Print Styles
+@media print {
+    * {
+        background: transparent !important;
+        color: black !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    html, body {
+        height: auto;
+        overflow: visible;
+    }
+    
+    :global(#app) {
+        .toasts-container,
+        .tooltip-container,
+        .file-drop-container,
+        .updater-banner-container {
+            display: none !important;
+        }
+    }
+}
+
+// Enhanced Dark Mode Support (for systems that support it)
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+    }
+}
+
+// Enhanced Light Mode Support (for future implementation)
+@media (prefers-color-scheme: light) {
+    :root {
+        color-scheme: light;
+        
+        // Override dark theme colors with light theme equivalents
+        --color-background-primary: @color-neutral-0;
+        --color-background-secondary: @color-neutral-50;
+        --color-background-tertiary: @color-neutral-100;
+        --color-background-modal: @color-neutral-0;
+        --color-background-overlay: rgba(0, 0, 0, 0.05);
+        
+        --color-text-primary: @color-neutral-900;
+        --color-text-secondary: @color-neutral-700;
+        --color-text-tertiary: @color-neutral-600;
+        --color-text-disabled: @color-neutral-500;
+        --color-text-inverse: @color-neutral-0;
+        
+        --color-border-primary: rgba(0, 0, 0, 0.1);
+        --color-border-secondary: rgba(0, 0, 0, 0.2);
+        --color-border-tertiary: rgba(0, 0, 0, 0.3);
+        
+        --color-shadow-light: rgba(0, 0, 0, 0.05);
+        --color-shadow-medium: rgba(0, 0, 0, 0.1);
+        --color-shadow-dark: rgba(0, 0, 0, 0.15);
+        --color-shadow-darker: rgba(0, 0, 0, 0.2);
+        
+        --color-gradient-background: linear-gradient(41deg, #ffffff 0%, #f8fafc 100%);
+    }
+}
