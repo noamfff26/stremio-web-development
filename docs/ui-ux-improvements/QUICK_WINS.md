@@ -326,6 +326,7 @@ useEffect(() => {
 
 ### Implementation
 
+{% raw %}
 ```javascript
 // In ContinueWatchingItem.js
 const ContinueWatchingItem = ({ metaItem, video }) => {
@@ -351,6 +352,7 @@ const ContinueWatchingItem = ({ metaItem, video }) => {
   );
 };
 ```
+{% endraw %}
 
 ### CSS
 ```css
