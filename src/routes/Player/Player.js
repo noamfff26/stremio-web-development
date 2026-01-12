@@ -383,6 +383,7 @@ const Player = ({ urlParams, queryParams }) => {
                         []
                 },
                 autoplay: true,
+                muted: true,
                 time: player.libraryItem !== null &&
                     player.selected.streamRequest !== null &&
                     player.selected.streamRequest.path !== null &&
