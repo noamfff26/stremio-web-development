@@ -22,6 +22,7 @@ const { default: AudioMenu } = require('./AudioMenu');
 const SpeedMenu = require('./SpeedMenu');
 const { default: SideDrawerButton } = require('./SideDrawerButton');
 const { default: SideDrawer } = require('./SideDrawer');
+const { default: EnhancedPlayerIntegration } = require('./EnhancedPlayerIntegration/EnhancedPlayerIntegration');
 const usePlayer = require('./usePlayer');
 const useStatistics = require('./useStatistics');
 const useVideo = require('./useVideo');
@@ -263,6 +264,30 @@ const Player = ({ urlParams, queryParams }) => {
 
     const onSubtitlesOffsetChanged = React.useCallback((offset) => {
         updateSettings({ subtitlesOffset: offset });
+    }, [updateSettings]);
+
+    const onSubtitlesTextColorChanged = React.useCallback((color) => {
+        updateSettings({ subtitlesTextColor: color });
+    }, [updateSettings]);
+
+    const onSubtitlesBackgroundColorChanged = React.useCallback((color) => {
+        updateSettings({ subtitlesBackgroundColor: color });
+    }, [updateSettings]);
+
+    const onSubtitlesBackgroundOpacityChanged = React.useCallback((opacity) => {
+        updateSettings({ subtitlesBackgroundOpacity: opacity });
+    }, [updateSettings]);
+
+    const onSubtitlesOutlineColorChanged = React.useCallback((color) => {
+        updateSettings({ subtitlesOutlineColor: color });
+    }, [updateSettings]);
+
+    const onSubtitlesOutlineSizeChanged = React.useCallback((size) => {
+        updateSettings({ subtitlesOutlineSize: size });
+    }, [updateSettings]);
+
+    const onSubtitlesFontChanged = React.useCallback((font) => {
+        updateSettings({ subtitlesFont: font });
     }, [updateSettings]);
 
     const onDismissNextVideoPopup = React.useCallback(() => {
@@ -841,6 +866,32 @@ const Player = ({ urlParams, queryParams }) => {
                     :
                     null
             }
+            <EnhancedPlayerIntegration
+                className={classnames(styles['layer'], styles['menu-layer'])}
+                videoElement={document.querySelector('video')}
+                subtitlesTracks={video.state.subtitlesTracks}
+                selectedSubtitlesTrackId={video.state.selectedSubtitlesTrackId}
+                audioTracks={video.state.audioTracks}
+                selectedAudioTrackId={video.state.selectedAudioTrackId}
+                onSubtitlesTrackSelected={onSubtitlesTrackSelected}
+                onAudioTrackSelected={onAudioTrackSelected}
+                onExtraSubtitlesTrackSelected={onExtraSubtitlesTrackSelected}
+                onSubtitlesSizeChanged={onSubtitlesSizeChanged}
+                onSubtitlesTextColorChanged={onSubtitlesTextColorChanged}
+                onSubtitlesBackgroundColorChanged={onSubtitlesBackgroundColorChanged}
+                onSubtitlesBackgroundOpacityChanged={onSubtitlesBackgroundOpacityChanged}
+                onSubtitlesOutlineColorChanged={onSubtitlesOutlineColorChanged}
+                onSubtitlesOutlineSizeChanged={onSubtitlesOutlineSizeChanged}
+                onSubtitlesFontChanged={onSubtitlesFontChanged}
+                onSubtitlesOffsetChanged={onSubtitlesOffsetChanged}
+                onSubtitlesDelayChanged={onExtraSubtitlesDelayChanged}
+                onExtraSubtitlesSizeChanged={onSubtitlesSizeChanged}
+                onExtraSubtitlesTextColorChanged={onSubtitlesTextColorChanged}
+                onExtraSubtitlesBackgroundColorChanged={onSubtitlesBackgroundColorChanged}
+                onExtraSubtitlesOutlineColorChanged={onSubtitlesOutlineColorChanged}
+                onExtraSubtitlesOffsetChanged={onSubtitlesOffsetChanged}
+                onExtraSubtitlesDelayChanged={onExtraSubtitlesDelayChanged}
+            />
             <ControlBar
                 className={classnames(styles['layer'], styles['control-bar-layer'])}
                 paused={video.state.paused}

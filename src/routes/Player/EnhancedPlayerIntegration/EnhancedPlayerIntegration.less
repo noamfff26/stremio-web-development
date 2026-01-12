@@ -8,15 +8,8 @@
 .enhanced-player-integration {
     position: relative;
     width: 100%;
-    background: linear-gradient(
-        135deg,
-        rgba(15, 13, 32, 0.9) 0%,
-        rgba(26, 23, 62, 0.9) 100%
-    );
-    backdrop-filter: blur(15px);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: var(--shadow-lg), var(--glow-primary);
+    pointer-events: none; // Allow clicks to pass through to video
+    // background: linear-gradient(...); // Remove background from container to be transparent
     padding: var(--spacing-4);
     
     // Enhanced transitions
@@ -35,6 +28,7 @@
 
 // Main controls
 .main-controls {
+    pointer-events: auto; // Re-enable clicks for controls
     margin-bottom: var(--spacing-4);
     
     .control-sections {
@@ -170,6 +164,7 @@
 
 // Advanced menu container
 .advanced-menu-container {
+    pointer-events: auto;
     margin-top: var(--spacing-4);
     
     .advanced-subtitles-menu {
@@ -179,6 +174,7 @@
 
 // Status panel
 .status-panel {
+    pointer-events: auto;
     position: absolute;
     top: 100%;
     left: 0;
