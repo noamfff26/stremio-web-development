@@ -2,7 +2,7 @@
 // React Accessibility Hooks for Enhanced User Experience
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { focusManagement, screenReader, keyboardNavigation, aria, motion, touch, highContrast } from './utils';
+import { focusManagement, screenReader, keyboardNavigation, aria, motion, touch, highContrast, colorContrast } from './utils';
 
 /**
  * Hook for managing focus within a container

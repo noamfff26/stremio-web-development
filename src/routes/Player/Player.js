@@ -242,6 +242,10 @@ const Player = ({ urlParams, queryParams }) => {
         video.setProp('extraSubtitlesDelay', delay);
     }, []);
 
+    const onSubtitlesDelayChanged = React.useCallback((delay) => {
+        video.setProp('subtitlesDelay', delay);
+    }, []);
+
     const onIncreaseSubtitlesDelay = React.useCallback(() => {
         const delay = video.state.extraSubtitlesDelay + 250;
         onExtraSubtitlesDelayChanged(delay);
@@ -867,8 +871,8 @@ const Player = ({ urlParams, queryParams }) => {
                     null
             }
             <EnhancedPlayerIntegration
-                className={classnames(styles['layer'], styles['menu-layer'])}
-                videoElement={document.querySelector('video')}
+                className={classnames(styles['layer'], styles['enhanced-integration-layer'])}
+                videoElement={video.containerRef.current ? video.containerRef.current.querySelector('video') : null}
                 subtitlesTracks={video.state.subtitlesTracks}
                 selectedSubtitlesTrackId={video.state.selectedSubtitlesTrackId}
                 audioTracks={video.state.audioTracks}
@@ -884,7 +888,7 @@ const Player = ({ urlParams, queryParams }) => {
                 onSubtitlesOutlineSizeChanged={onSubtitlesOutlineSizeChanged}
                 onSubtitlesFontChanged={onSubtitlesFontChanged}
                 onSubtitlesOffsetChanged={onSubtitlesOffsetChanged}
-                onSubtitlesDelayChanged={onExtraSubtitlesDelayChanged}
+                onSubtitlesDelayChanged={onSubtitlesDelayChanged}
                 onExtraSubtitlesSizeChanged={onSubtitlesSizeChanged}
                 onExtraSubtitlesTextColorChanged={onSubtitlesTextColorChanged}
                 onExtraSubtitlesBackgroundColorChanged={onSubtitlesBackgroundColorChanged}

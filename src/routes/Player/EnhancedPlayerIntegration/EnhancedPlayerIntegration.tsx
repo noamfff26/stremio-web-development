@@ -7,7 +7,8 @@ import classNames from 'classnames';
 import AdvancedSubtitlesMenu from 'stremio/routes/Player/AdvancedSubtitlesMenu/AdvancedSubtitlesMenu';
 import useEnhancedPlayer from 'stremio/routes/Player/useEnhancedPlayer';
 import { Button, Icon, LoadingSpinner } from 'stremio/components';
-import { useScreenReader, useReducedMotion } from 'stremio/common/accessibility';
+import { useScreenReader } from 'stremio/common/accessibility';
+import { motion, screenReader } from 'stremio/common/accessibility/utils';
 import { STATUS_INDICATORS } from 'stremio/common/ENHANCED_CONSTANTS';
 import styles from './EnhancedPlayerIntegration.less';
 
@@ -70,7 +71,7 @@ const EnhancedPlayerIntegration = ({
     const [isAdvancedMenuOpen, setIsAdvancedMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState('main');
     const [showStatusPanel, setShowStatusPanel] = useState(false);
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = motion.prefersReducedMotion();
     
     // Initialize enhanced player hook
     const enhancedPlayer = useEnhancedPlayer();
@@ -112,32 +113,29 @@ const EnhancedPlayerIntegration = ({
                     ];
                     
                     // Auto-select the uploaded track
-                    if (onExtraSubtitlesTrackSelected) {
-                        onExtraSubtitlesTrackSelected(newTrack.id);
-                    }
+                if (onExtraSubtitlesTrackSelected) {
+                    onExtraSubtitlesTrackSelected(newTrack.id);
                 }
-                
-                // Announce success to screen readers
-                useScreenReader(
-                    t('SUBTITLE_FILE_UPLOAD_SUCCESS', { fileName: result.metadata.fileName }),
-                    'assertive'
-                );
-            } else {
-                console.error('Subtitle file upload failed:', result.error);
-                
-                // Announce error to screen readers
-                useScreenReader(
-                    t('SUBTITLE_FILE_UPLOAD_FAILED', { error: result.error }),
-                    'assertive'
-                );
             }
+
+            screenReader.announce(
+                t('SUBTITLE_FILE_UPLOAD_SUCCESS', { fileName: result.metadata.fileName }),
+                'assertive'
+            );
+        } else {
+            console.error('Subtitle file upload failed:', result.error);
+
+            screenReader.announce(
+                t('SUBTITLE_FILE_UPLOAD_FAILED', { error: result.error }),
+                'assertive'
+            );
+        }
             
             return result;
         } catch (error) {
             console.error('Error uploading subtitle file:', error);
-            
-            // Announce error to screen readers
-            useScreenReader(
+
+            screenReader.announce(
                 t('SUBTITLE_FILE_UPLOAD_ERROR', { error: error.message }),
                 'assertive'
             );
@@ -169,8 +167,7 @@ const EnhancedPlayerIntegration = ({
             }
         }
         
-        // Announce preset application
-        useScreenReader(
+        screenReader.announce(
             t('SUBTITLE_PRESET_APPLIED', { preset: presetKey }),
             'polite'
         );
@@ -203,8 +200,7 @@ const EnhancedPlayerIntegration = ({
         onExtraSubtitlesOffsetChanged?.(50);
         onExtraSubtitlesDelayChanged?.(0);
         
-        // Announce reset
-        useScreenReader(t('SUBTITLE_SETTINGS_RESET'), 'polite');
+        screenReader.announce(t('SUBTITLE_SETTINGS_RESET'), 'polite');
     }, [enhancedPlayer, onSubtitlesSizeChanged, onSubtitlesTextColorChanged, 
           onSubtitlesBackgroundColorChanged, onSubtitlesBackgroundOpacityChanged,
           onSubtitlesOutlineColorChanged, onSubtitlesOutlineSizeChanged,
@@ -227,7 +223,7 @@ const EnhancedPlayerIntegration = ({
                 
                 // Update audio tracks with enhanced information
                 // This would typically be handled by the parent component
-                events.emit('audioTracksEnhanced', enhancedTracks);
+                enhancedPlayer.events.emit('audioTracksEnhanced', enhancedTracks);
             }
         } catch (error) {
             console.error('Audio track detection failed:', error);
