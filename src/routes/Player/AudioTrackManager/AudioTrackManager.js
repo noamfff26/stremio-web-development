@@ -2,7 +2,7 @@
 // Advanced Audio Track Manager with Multi-Method Detection Algorithms
 
 const EventEmitter = require('eventemitter3');
-const { AUDIO_DETECTION_SETTINGS, AUDIO_CODECS, ERROR_MESSAGES, STATUS_INDICATORS } = require('stremio/common/ENHANCED_CONSTANTS');
+const { AUDIO_DETECTION_SETTINGS, AUDIO_CODECS, ERROR_MESSAGES, STATUS_INDICATORS } = require('../../../common/ENHANCED_CONSTANTS');
 
 class AudioTrackManager extends EventEmitter {
     constructor() {
